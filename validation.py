@@ -26,6 +26,7 @@ from tqdm import tqdm
 from utils.metrics import fast_hist, per_class_iu, per_class_dice, scores_from_hist
 from utils.build import load_checkpoint
 from dataset.DensePASS import DensePASS13, DensePASS19
+from dataset.DensePASS_circular import DensePASS13Circular, DensePASS19Circular
 from dataset.Stanford360Span8 import Stanford360PanoramaVal
 from dataset.WildPASS import WildPASS13
 from sam.build_sam import build_sam2
@@ -559,21 +560,39 @@ def build_dataset_and_loader(args: argparse.Namespace):
         syn_w, syn_h = 4096, 1024
         sw_w_stride, sw_size = 384, 1024
         assert (syn_w - sw_size) % sw_w_stride == 0 and  sw_w_stride <= sw_size
+
+        # Select dataset class based on --enable_scm flag
+        if args.enable_scm:
+            print(f"[SCM] Using circular padding with pad_width={args.scm_pad_width}")
+            DensePASSClass13 = DensePASS13Circular
+            DensePASSClass19 = DensePASS19Circular
+            extra_kwargs = {
+                'enable_circular_padding': True,
+                'circular_pad_width': args.scm_pad_width
+            }
+        else:
+            print("[Baseline] Using standard DensePASS no circular padding")
+            DensePASSClass13 = DensePASS13
+            DensePASSClass19 = DensePASS19
+            extra_kwargs = {}
+
         if class_set == 19:
-            val_dataset = DensePASS19(
+            val_dataset = DensePASSClass19(
                 root_syn,
                 val_list,
                 crop_size=(syn_w, syn_h),
                 sliding_window=(sw_w_stride, sw_size),
                 passes=2,
+                **extra_kwargs
             )
         else:
-            val_dataset = DensePASS13(
+            val_dataset = DensePASSClass13(
                 root_syn,
                 val_list,
                 crop_size=(syn_w, syn_h),
                 sliding_window=(sw_w_stride, sw_size),
                 passes=2,
+                **extra_kwargs
             )
     elif dataset_name == "WildPASS":
         custom_root = str(getattr(args, "wildpass_processed_root", "") or "").strip()
@@ -824,6 +843,20 @@ def main():
         action='store_true',
         help='与 --log_file 同用：追加写入而不是覆盖。',
     )
+
+    # SCM (Seamless Circular Memory) arguments
+    parser.add_argument(
+        '--enable_scm',
+        action='store_true',
+        help='Enable Seamless Circular Memory with circular padding for 360 degree panorama'
+    )
+    parser.add_argument(
+        '--scm_pad_width',
+        type=int,
+        default=512,
+        help='Circular padding width for SCM (default: 512, half of window_size 1024)'
+    )
+
     args = parser.parse_args()
     setup_seed(args.seed)
 
