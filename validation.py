@@ -345,9 +345,12 @@ def validation(model: nn.Module, data_loader: DataLoader, device: torch.device,
 
             # Merge：DensePASS / WildPASS 均先 resize 到 4096×1024 再滑窗，保证每块为 1024×1024（SAM2 骨干要求）
             if dataset_name in ("DensePASS", "WildPASS"):
+                # Calculate padded width for SCM
+                padded_width = (4096 + 2 * args.scm_pad_width) if args.enable_scm else 4096
+                
                 merged_pred = merge_width_scatter_np(
                     logits_np=logits_maps,
-                    orig_size=(1024, 5120 if args.enable_scm else 4096),
+                    orig_size=(1024, padded_width),
                     W_patch=W,
                     stride_w=384,
                     passes=2,
@@ -359,6 +362,8 @@ def validation(model: nn.Module, data_loader: DataLoader, device: torch.device,
                 if args.enable_scm:
                     pad_w = args.scm_pad_width
                     merged_pred = merged_pred[:, :, pad_w:-pad_w]
+                
+                
                 
                 pred_h, pred_w = 400, 2048
                 pred_resized = np.zeros((B, pred_h, pred_w))
@@ -429,6 +434,9 @@ def validation(model: nn.Module, data_loader: DataLoader, device: torch.device,
                     ol = np.squeeze(ol)
                 H_full, W_full = int(ol.shape[-2]), int(ol.shape[-1])
                 stride_w = int(getattr(args, "stanford_stride_w", 256))
+                # Calculate padded width for SCM
+                padded_width = (4096 + 2 * args.scm_pad_width) if args.enable_scm else 4096
+                
                 merged_pred = merge_width_scatter_np(
                     logits_np=logits_maps,
                     orig_size=(H_full, W_full),
