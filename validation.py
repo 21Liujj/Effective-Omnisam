@@ -347,13 +347,19 @@ def validation(model: nn.Module, data_loader: DataLoader, device: torch.device,
             if dataset_name in ("DensePASS", "WildPASS"):
                 merged_pred = merge_width_scatter_np(
                     logits_np=logits_maps,
-                    orig_size=(1024, 4096),
+                    orig_size=(1024, 5120 if args.enable_scm else 4096),
                     W_patch=W,
                     stride_w=384,
                     passes=2,
                     device=str(device),
                     return_probs=False,
                 )
+                
+                # SCM: Crop padded prediction back to original width
+                if args.enable_scm:
+                    pad_w = args.scm_pad_width
+                    merged_pred = merged_pred[:, :, pad_w:-pad_w]
+                
                 pred_h, pred_w = 400, 2048
                 pred_resized = np.zeros((B, pred_h, pred_w))
                 gt_eval = np.zeros((B, pred_h, pred_w), dtype=np.int64)

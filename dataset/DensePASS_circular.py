@@ -53,6 +53,18 @@ class DensePASS13Circular(DensePASS13):
             print(f"  - circular_padding: ENABLED")
             print(f"  - pad_width: {circular_pad_width}px")
             print(f"  - padded_width: {crop_size[0] + 2 * circular_pad_width}px")
+
+    def _get_frame_cnt(self):
+        """
+        Override to return correct frame count when circular padding is enabled.
+        """
+        w, h = self.crop_size
+        if self.enable_circular_padding:
+            w_padded = w + 2 * self.circular_pad_width
+            frame_cnt = (w_padded - self.window_size) // self.stride + 1
+        else:
+            frame_cnt = (w - self.window_size) // self.stride + 1
+        return frame_cnt
     
     def _sliding_windows(self, image, label, window_size, stride):
         """
@@ -150,6 +162,15 @@ class DensePASS19Circular(DensePASS19):
             print(f"  - crop_size: {crop_size}")
             print(f"  - circular_padding: ENABLED")
             print(f"  - pad_width: {circular_pad_width}px")
+
+    def _get_frame_cnt(self):
+        w, h = self.crop_size
+        if self.enable_circular_padding:
+            w_padded = w + 2 * self.circular_pad_width
+            frame_cnt = (w_padded - self.window_size) // self.stride + 1
+        else:
+            frame_cnt = (w - self.window_size) // self.stride + 1
+        return frame_cnt
     
     def _sliding_windows(self, image, label, window_size, stride):
         h, w = label.shape
