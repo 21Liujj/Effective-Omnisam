@@ -1,0 +1,86 @@
+# experiments/pl_refiner/configs/R2R4_proto_gate_fullrun.yaml
+# R2 + R4 proto_gate FULL-RUN.
+# Refiner block is IDENTICAL to the validated R4_proto_gate_5step_diag.yaml
+# (class_balance + proto_gate + diagnostics). Only run-control differs:
+# full epoch instead of 5-step cap.
+#
+# experiment_id      : R2R4_proto_gate_fullrun
+# refiner_mode       : proto_gate  (R2 class-balanced valid_mask -> R4 current-batch proto gate)
+# full_train_allowed : true
+# Hard invariant enforced in refiner: final_valid_mask <= r2_valid_mask.
+# NOTE: epoch-end val mIoU IS a legitimate result here.
+
+pseudo_label_refiner:
+  mode: "proto_gate"
+  enable: true
+  num_classes: 13
+  ignore_index: 255
+  inherit_class_balanced: true
+
+  class_balance:
+    common_classes: [0, 1, 2, 8, 9, 10, 12]
+    rare_classes: [3, 4, 5, 11]
+    extreme_rare_classes: [6, 7]
+    common_top_ratio: 0.50
+    rare_top_ratio: 0.75
+    extreme_rare_top_ratio: 0.80
+    common_min_conf: 0.75
+    rare_min_conf: 0.60
+    extreme_rare_min_conf: 0.55
+    min_pixels_per_class: 50
+    num_classes: 13
+
+  proto_gate:
+    prototype_source: "current_batch"
+    min_proto_pixels: 10
+    common_filter_percentile: 0.10
+    rare_filter_percentile: 0.05
+    extreme_rare_filter_percentile: 0.0
+    min_filter_pixels_per_class: 100
+    min_keep_pixels_per_class: 10
+    fallback_keep_missing_proto: true
+    fallback_keep_insufficient_pixels: true
+    fallback_keep_extreme_rare: true
+    detach_feature: true
+    normalize_feature: true
+    normalize_prototype: true
+    eps: 1.0e-6
+
+  prototype_diagnostics:
+    enabled: true
+    output_jsonl: "r2r4_proto_gate_fullrun_diag.jsonl"
+
+plugins:
+  # A: pseudo_conf_mask — same as validated A_Dtrain_Etrain config
+  pseudo_conf_mask:
+    enabled: true
+    threshold: 0.85
+    min_valid_ratio: 0.01
+    min_valid_pixels: 0
+    ignore_index: 255
+    fallback: "skip"
+
+  # D: Memory Compression — train-only, PL disabled
+  efficient_tam_memory:
+    enabled: true
+    mode: "pool"
+    compress_ratio: 0.5
+    pool_stride: 2
+    apply_in_pl: false
+    apply_in_train: true
+
+  # E: Sparse Memory Retrieval — train-only, PL disabled
+  efficient_sam2_sparse:
+    enabled: true
+    mode: "attn_topk"
+    keep_ratio: 0.5
+    min_keep_tokens: 64
+    saliency_source: "feature_norm"
+    cache_saliency: true
+    fallback_full_when_uncertain: true
+    apply_in_pl: false
+    apply_in_train: true
+
+reuse_pl_dir: data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+train_max_iters: 0
+refiner_verbose_log: true

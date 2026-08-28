@@ -1,0 +1,277 @@
+========== LAUNCH META ==========
+timestamp: 20260625_154536
+pwd: /root/autodl-tmp/OmniSAM-main
+runs: R2R4
+gpu: 0
+seed: 1
+num_epochs: 1
+log_file: experiments/pl_refiner/fullrun_logs/R2R4_accel_seed1_20260625_154536.log
+
+========== DISK ==========
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/md0        100G   56G   45G  56% /root/autodl-tmp
+
+========== GPU ==========
+Thu Jun 25 15:45:36 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.105.08             Driver Version: 580.105.08     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 5090        On  |   00000000:3D:00.0 Off |                  N/A |
+| 42%   30C    P8             17W /  575W |       0MiB /  32607MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+========== CKPT ==========
+-rw-r--r-- 1 root root 178M Apr  5 21:24 /root/autodl-tmp/omnisam_s.pth
+ec0c607a6247651cb8c5eb04e3c15a7ae4b067655c4ca6cb5b6ff9d80adaba85  /root/autodl-tmp/omnisam_s.pth
+
+========== FIXED PL DIR ==========
+drwxr-xr-x 4 root root 54 Apr 26 02:17 data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+
+========== CONFIG SNAPSHOT ==========
+--- R2R4_proto_gate_fullrun.yaml ---
+# experiments/pl_refiner/configs/R2R4_proto_gate_fullrun.yaml
+# R2 + R4 proto_gate FULL-RUN.
+# Refiner block is IDENTICAL to the validated R4_proto_gate_5step_diag.yaml
+# (class_balance + proto_gate + diagnostics). Only run-control differs:
+# full epoch instead of 5-step cap.
+#
+# experiment_id      : R2R4_proto_gate_fullrun
+# refiner_mode       : proto_gate  (R2 class-balanced valid_mask -> R4 current-batch proto gate)
+# full_train_allowed : true
+# Hard invariant enforced in refiner: final_valid_mask <= r2_valid_mask.
+# NOTE: epoch-end val mIoU IS a legitimate result here.
+
+pseudo_label_refiner:
+  mode: "proto_gate"
+  enable: true
+  num_classes: 13
+  ignore_index: 255
+  inherit_class_balanced: true
+
+  class_balance:
+    common_classes: [0, 1, 2, 8, 9, 10, 12]
+    rare_classes: [3, 4, 5, 11]
+    extreme_rare_classes: [6, 7]
+    common_top_ratio: 0.50
+    rare_top_ratio: 0.75
+    extreme_rare_top_ratio: 0.80
+    common_min_conf: 0.75
+    rare_min_conf: 0.60
+    extreme_rare_min_conf: 0.55
+    min_pixels_per_class: 50
+    num_classes: 13
+
+  proto_gate:
+    prototype_source: "current_batch"
+    min_proto_pixels: 10
+    common_filter_percentile: 0.10
+    rare_filter_percentile: 0.05
+    extreme_rare_filter_percentile: 0.0
+    min_filter_pixels_per_class: 100
+    min_keep_pixels_per_class: 10
+    fallback_keep_missing_proto: true
+    fallback_keep_insufficient_pixels: true
+    fallback_keep_extreme_rare: true
+    detach_feature: true
+    normalize_feature: true
+    normalize_prototype: true
+    eps: 1.0e-6
+
+  prototype_diagnostics:
+    enabled: true
+    output_jsonl: "r2r4_proto_gate_fullrun_diag.jsonl"
+
+plugins:
+  # A: pseudo_conf_mask — same as validated A_Dtrain_Etrain config
+  pseudo_conf_mask:
+    enabled: true
+    threshold: 0.85
+    min_valid_ratio: 0.01
+    min_valid_pixels: 0
+    ignore_index: 255
+    fallback: "skip"
+
+  # D: Memory Compression — train-only, PL disabled
+  efficient_tam_memory:
+    enabled: true
+    mode: "pool"
+    compress_ratio: 0.5
+    pool_stride: 2
+    apply_in_pl: false
+    apply_in_train: true
+
+  # E: Sparse Memory Retrieval — train-only, PL disabled
+  efficient_sam2_sparse:
+    enabled: true
+    mode: "attn_topk"
+    keep_ratio: 0.5
+    min_keep_tokens: 64
+    saliency_source: "feature_norm"
+    cache_saliency: true
+    fallback_full_when_uncertain: true
+    apply_in_pl: false
+    apply_in_train: true
+
+reuse_pl_dir: data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+train_max_iters: 0
+refiner_verbose_log: true
+
+========== GIT SNAPSHOT ==========
+57b7654ed99c47f615caecf21b9a2263bb58e54e
+ D IMPROVEMENTS.md
+ D README.md
+ M adaptation/engine.py
+ M adaptation/pl_generator.py
+ M adaptation/strategies.py
+ M adaptation/trainer.py
+ M dataset/DensePASS.py
+ M dataset/WildPASS.py
+ D demo_compare/1__Paper_demo_left_input_right_seg_bottom_legend.png
+ D demo_compare/1__Paper_pred_labelTrainIds.png
+ D demo_compare/1__UDA_demo_left_input_right_seg_bottom_legend.png
+ D demo_compare/1__UDA_pred_labelTrainIds.png
+ D demo_compare/1__compare_stack_Paper_UDA.png
+ D experiment.md
+ M logs/compare_omnisam_vs_60_36.log
+ D logs/run_adaptation_20260410_135913.log
+ D logs/run_adaptation_20260410_135913.pid
+ M logs/uda_densepass_originalish_20260410_133124.log
+ M model/memory_bank.py
+ M model/model.py
+ M model/modules/decoder_sam.py
+ D pd_auto_iter/checkpoints/Cityscapes_13cls/sam2_s/best_sam2_s_iou60.14.pth
+ D pd_auto_iter/checkpoints/Cityscapes_13cls/sam2_s/last_sam2_s_13cls.pth
+ D pd_auto_iter/checkpoints/Cityscapes_13cls/sam2_s/metrics.jsonl
+ D pd_auto_iter/checkpoints/Cityscapes_13cls/sam2_s/resume_sam2_s.pth
+ D pd_uda_densepass/checkpoints/Cityscapes_13cls/sam2_s/last_sam2_s_13cls.pth
+ D pd_uda_densepass/checkpoints/Cityscapes_13cls/sam2_s/resume_sam2_s.pth
+ M requirements.txt
+ M run_adaptation.py
+ D sam/CODE_OF_CONDUCT.md
+ D sam/CONTRIBUTING.md
+ D sam/INSTALL.md
+ D sam/README.md
+ D sam/RELEASE_NOTES.md
+ D sam/demo/README.md
+ M sam/sam/modeling/backbones/hieradet.py
+ M sam/sam/modeling/position_encoding.py
+ D sam/sav_dataset/README.md
+ D sam/tools/README.md
+ D sam/training/README.md
+ M scripts/resume_adaptation_uda_densepass.sh
+ M scripts/run_adaptation_uda_densepass.sh
+ M scripts/run_adaptation_uda_wildpass.sh
+ M scripts/uda_densepass_originalish_from_60_36.sh
+ M utils/build.py
+ M utils/callbacks.py
+ M utils/metrics.py
+ M validation.py
+?? .claude/
+?? CLAUDE.md
+?? adaptation/engine.py.bak_task22a
+?? adaptation/patch_scheduler.py
+?? adaptation/pl_update_controller.py
+?? adaptation/plugins/
+?? assets/openclip_class_prompts_10.json
+?? assets/openclip_class_prompts_13_optimized.json
+?? assets/text_prototypes_cityscapes13_vitb32.pt
+?? assets/text_prototypes_openclip_text_latest.pt
+?? aux_outputs/
+?? ckpt_zoo/
+?? config_mem_pool2_before_attention.yaml
+?? configs/
+?? data_extra/
+?? dataset/Stanford360Span8.py
+?? docs/
+?? experiments/
+?? markdown_archive/
+?? model/depth_adapter.py
+?? model/modules/memory_compressor.py
+?? model/modules/sparse_memory_retriever.py
+?? model/text_align.py
+?? model/text_semantic.py
+?? sam2/
+?? scripts/extra_exp/
+?? scripts/pl_threshold_scan.py
+?? scripts/run_ablation_all5.sh
+?? scripts/run_ablation_base.sh
+?? scripts/run_ablation_depth_prior_50.sh
+?? scripts/run_ablation_plus1_confmask.sh
+?? scripts/run_ablation_plus4_efficienttam.sh
+?? scripts/run_ablation_plus5_efficientsam2_sparse.sh
+?? scripts/run_depth_multimodal_ablation.sh
+?? scripts/run_multimodal_ablation_a0_a4.sh
+?? scripts/run_multimodal_cd_sweep.sh
+?? scripts/run_multimodal_stage1_stage2_abcd.sh
+?? scripts/run_pl_threshold_scan.sh
+?? scripts/run_plugin_ablation_base_only.sh
+?? scripts/run_plugin_ablation_base_plus5_train_only.sh
+?? scripts/run_plugin_ablation_seed1_triplet.sh
+?? scripts/run_plugin_ablation_small_sample.sh
+?? scripts/run_plugin_final_2000_base_vs_ADEtrain.sh
+?? scripts/run_text_ablation_two_stage.sh
+?? scripts/run_text_crossattn_diag_matrix50.sh
+?? scripts/run_text_crossattn_diagnose50.sh
+?? scripts/run_text_crossattn_fixed200.sh
+?? scripts/run_text_crossattn_smoke50.sh
+?? scripts/run_text_grounding.sh
+?? scripts/run_text_grounding_diagnose.sh
+?? scripts/run_text_grounding_fixed20_all.sh
+?? scripts/run_text_grounding_fixed20_c1.sh
+?? scripts/run_text_grounding_fixed50_all.sh
+?? scripts/run_text_semantic_alpha_grid.sh
+?? scripts/run_text_semantic_fixed200.sh
+?? scripts/run_text_smoke_fixed50.sh
+?? scripts/time_ablation/
+?? scripts/utils/
+?? scripts/val_from_ckpt_zoo.sh
+?? scripts/watch_latest_grounding_log.sh
+?? tecma_phase5_6_results.tar.gz
+?? tecma_phase7_1_per_class_iou.tar.gz
+?? tests/
+?? tools/analysis/
+?? tools/build_text_prototypes.py
+?? tools/check_depth_prior.py
+?? tools/check_standford2d3d_span8.py
+?? tools/check_wildpass13.py
+?? tools/ckpt_zoo.py
+?? tools/collect_standford2d3d_results.py
+?? tools/collect_wildpass_results.py
+?? tools/convert_standford2d3d_span8_labels.py
+?? tools/convert_wildpass13_labels.py
+?? tools/demo_text_prototype_bank.py
+?? tools/eval_standford2d3d_span8.py
+?? tools/eval_wildpass13.py
+?? tools/generate_openclip_text_outputs.py
+?? tools/generate_wildpass_depth_prior.py
+?? tools/prepare_standford2d3d.py
+?? tools/prepare_wildpass.py
+?? tools/smoke_test_plugins.py
+?? tools/summarize_abcd_results.py
+?? tools/summarize_time_ablation.py
+?? tools/tecma_analysis/
+?? tools/wildpass_eval_diagnose.py
+?? tools/wildpass_memory_accel.py
+?? tools/wildpass_pack_train_timing.py
+?? tools/write_val_ckpts_summary.py
+?? utils/__init__.py
+?? utils/depth_prior.py
+?? utils/pl_merge.py
+?? utils/pl_sidecar.py
+?? utils/seg_vis.py
+?? utils/wildpass_label_convert.py
+?? validation_muti.py
+

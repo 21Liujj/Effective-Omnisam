@@ -1,0 +1,66 @@
+# experiments/pl_refiner/configs/R7_full.yaml
+# R7 full: full PseudoLabelRefiner stack + A_Dtrain_Etrain memory config.
+# Combines class_balance + plq + prototype_gate + correction (conservative)
+# + memory_consistency (conservative). Correction and memory_consistency
+# default to false until R5/R6 stability is confirmed.
+#
+# experiment_id      : R7_full
+# refiner_mode       : full
+# use_class_balance  : true
+# use_plq            : true
+# use_prototype      : true
+# use_correction     : false  (enable after R5 stable, currently conservative)
+# use_memory_consistency: false  (enable after R6 stable, currently conservative)
+# memory_config      : A_Dtrain_Etrain (D+E memory compression, train-only)
+# full_train_allowed : true  (after R5/R6 cleared to stable)
+# status             : NOT_IMPLEMENTED_YET — all sub-modules required
+
+pseudo_label_refiner:
+  mode: "full"
+  enable: true
+  class_balance:
+    top_ratio: 0.67
+    min_pixels_per_class: 10
+    num_classes: 13
+  plq:
+    use_entropy: true
+    use_local_agreement: true
+    local_kernel_size: 3
+    weight_power: 1.0
+  prototype:
+    feat_key: "feat_t_de"
+    distance_metric: "cosine"
+    gate_threshold: 0.5
+    ema_momentum: 0.99
+    num_classes: 13
+  correction:
+    # Conservative default — disabled until R5 confirmed stable.
+    # Set enable: true and tune thresholds after R5 L3 sanity passes.
+    enable: false
+    method: "region_vote"
+    min_region_size: 50
+    correction_conf_thr: 0.9
+    max_correction_ratio: 0.05
+  memory_consistency:
+    # Conservative default — disabled until R6 confirmed stable.
+    # Set enable: true and tune weights after R6 Phase 6 feasibility scan.
+    enable: false
+    consistency_weight: 0.3
+    memory_queue_size: 9
+
+# Memory efficiency: A_Dtrain_Etrain config (D + E, train-only, as in final_2000)
+plugins:
+  pseudo_conf_mask:
+    enabled: true
+    threshold: 0.85
+  efficient_tam_memory:
+    enabled: true
+    apply_in_pl: false
+    apply_in_train: true
+  efficient_sam2_sparse:
+    enabled: true
+    apply_in_pl: false
+    apply_in_train: true
+
+reuse_pl_dir: data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+train_max_iters: 5

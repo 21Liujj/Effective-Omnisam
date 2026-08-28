@@ -1,0 +1,25 @@
+mem_compression:
+  enabled: false
+  mode: "pool"                       # none / pool / spatial / hybrid
+  location: "before_attention"       # before_attention / before_bank
+  kernel_size: 2
+  stride: 2
+  keep_global_tokens: 0
+  apply_to_pos_enc: true
+  min_tokens: 64
+  warmup_iters: 0
+  enable_in_train: true
+  enable_in_pseudo_label: true
+  train_kernel_size: 2
+  pl_kernel_size: 2
+  verbose: true
+  log_interval: 200
+
+# CLI mapping example (run_adaptation.py):
+# --mem_compression_enabled \
+# --mem_compression_mode pool \
+# --mem_compression_location before_attention \
+# --mem_compression_kernel_size 2 \
+# --mem_compression_stride 2 \
+# --mem_compression_min_tokens 64
+

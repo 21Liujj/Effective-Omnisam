@@ -1,0 +1,12 @@
+\section{引言}
+\label{sec:introduction}
+
+全景语义分割旨在为 $360^\circ$ 场景中的每个像素预测语义类别，是全景感知、自动驾驶和机器人导航中的基础任务。与普通针孔图像相比，全景图具有更宽视场和更复杂的几何形变，因此模型需要同时处理语义判别与投影域差异。
+
+无监督域适应提供了一种降低目标域标注成本的思路：源域具有像素级标签，而目标域仅提供无标签图像。在 Cityscapes $\rightarrow$ DensePASS 设置中，源域与目标域在成像方式、场景分布和像素尺度上均存在差异，伪标签质量与训练稳定性成为关键问题。
+
+OmniSAM 基于 SAM/SAM2 的视觉表示和 memory 机制，为全景语义分割提供了较强的跨图像建模能力。然而，memory tokens 在训练中带来额外计算和显存开销，尤其是在滑窗式全景输入下会影响训练效率。
+
+本文 v1.0 的主线聚焦于 memory-efficient OmniSAM：通过 Memory Token Compression (MTC) 与 Sparse Memory Retrieval (SMR) 降低训练阶段的 memory 计算负担，并在保持 DensePASS 精度基本稳定的前提下提升训练效率。
+
+此外，伪标签可靠性仍是 UDA 中的重要辅助问题。本文保留 Pseudo-label Quality Refinement (PQR) 作为探索性方向，用于分析类别均衡和 prototype-guided 可靠性建模，但不将其作为当前 v1.0 的最强主贡献。

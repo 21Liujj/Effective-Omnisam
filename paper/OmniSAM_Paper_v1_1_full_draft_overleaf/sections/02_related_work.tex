@@ -1,0 +1,29 @@
+\section{相关工作}
+\label{sec:related_work}
+
+\subsection{全景图像语义分割}
+全景图像语义分割关注对 $360^\circ$ 场景进行像素级语义预测，是自动驾驶、机器人导航和室外场景理解中的重要任务。与普通透视图相比，全景图像具有大视场、环绕视角和更强的全局环境覆盖能力，但常用的 ERP 表示也会引入投影畸变、尺度变化和边界连续性问题。特别是在图像左右边界处，真实场景在几何上连续，而二维展开图中却被切断；同一语义结构也可能跨越多个局部视场，使模型需要同时处理局部细节和跨视场语义关联。
+
+现有全景语义分割方法通常围绕几何畸变建模、视场展开、局部到全局上下文融合以及多视图表示展开。一类方法尝试通过投影校正或畸变感知卷积缓解 ERP 形变，另一类方法将全景图像切分为多个局部视图并聚合上下文信息，也有方法显式建模长距离语义依赖以提升全局一致性。这些工作主要关注如何提升全景分割网络本身对投影几何和大视场结构的适应能力。与之不同，本文不从零设计新的全景分割网络，也不提出新的全景投影模型，而是在 OmniSAM 全景适配框架下进一步研究训练阶段 memory token 冗余问题，并围绕 memory-efficient training 进行改进。
+
+\subsection{无监督域适应语义分割}
+无监督域适应语义分割旨在源域具有像素级标注、目标域无标注的条件下提升目标域分割性能。常见技术路线包括 adversarial alignment、self-training、pseudo-label refinement、consistency regularization 以及特征或输出空间对齐等。对语义分割而言，UDA 不仅需要缩小图像风格和特征分布差异，还需要避免目标域错误伪标签在像素级监督中被持续放大，因此训练稳定性和目标域监督信号质量通常是方法设计的重点。
+
+全景 UDA 比普通透视图 UDA 更复杂。源域和目标域之间可能同时存在图像风格、视角结构、投影几何、尺度分布和类别可见性差异，例如 Cityscapes $\rightarrow$ DensePASS 设置中，源域为针孔图像，目标域为全景图像。普通 UDA 分割方法若直接迁移到该设置，往往难以显式处理跨视场上下文和全景投影带来的伪标签噪声。本文沿用 OmniSAM 的 UDA 适配背景，不重新提出完整 UDA 框架，而是将重点放在两个更具体的问题上：训练阶段 memory token 冗余如何降低，以及目标域伪标签可靠性如何作为辅助因素进行分析。
+
+\subsection{Segment Anything 与 memory-based 视觉建模}
+Segment Anything 系列视觉基础模型为密集视觉任务提供了较强的通用表示能力，SAM2-style memory mechanism 进一步使模型能够在跨帧、跨视图或跨 patch 的场景中传播上下文信息。对于全景语义分割，将长条形全景图拆分为 patch 或 view sequence 后，通过 memory attention 连接不同视场的信息，有助于减少局部窗口独立预测造成的上下文割裂，并提升道路、建筑、天空等大范围区域的语义一致性。
+
+然而，memory-based 视觉建模也会带来额外计算成本。随着历史视图数量和 memory token 数量增加，当前特征与记忆表示之间的交互会增加 attention 计算、显存占用和训练时间。在 OmniSAM 的 UDA 训练中，memory mechanism 与源域监督、目标域伪标签监督等过程共同构成训练开销。本文不改变 SAM/SAM2 主体表示能力，也不展开新的基础模型结构设计，而是针对 OmniSAM 中 memory mechanism 的训练阶段 token 冗余进行压缩和稀疏检索，以在保持全景语义建模能力的同时降低训练成本。
+
+\subsection{Token-efficient 与 memory-efficient 视觉模型}
+视觉 Transformer 和大规模视觉基础模型中，token 数量直接影响 attention 复杂度、显存占用以及训练或推理时间。因此，token-efficient 和 memory-efficient 方法近年来受到关注，相关思路包括 token pruning、token merging、sparse attention、early exiting、memory compression 等。这些方法通常利用 token 重要性、特征相似性或结构先验减少冗余计算，使模型在较低计算预算下保持主要表征能力。
+
+现有高效视觉模型研究有相当一部分关注分类、检测或通用推理阶段效率，也有工作面向视频和长序列任务压缩历史记忆。本文的区别在于研究对象是 OmniSAM 全景 UDA 训练阶段的 memory token，而不是一般前向推理中的全部视觉 token。本文提出的 Memory Token Compression (MTC) 用于压缩 memory token，Sparse Memory Retrieval (SMR) 用于从历史记忆中选择更有价值的 token。二者的目标不是单纯追求通用前向速度，而是在基本保持全景分割精度和边界质量的同时，降低 UDA 训练过程中的 memory 计算成本。
+
+\subsection{伪标签可靠性建模}
+Self-training 和 pseudo-label 是 UDA 语义分割中的常用策略。模型先在目标域生成伪标签，再利用这些伪标签构造无标签数据上的监督信号。然而，伪标签噪声会导致错误监督累积，尤其在目标域无标签、类别分布不均衡或源目标域差异较大时更明显。对于全景图像，投影畸变、局部遮挡和跨视场结构还会进一步影响边界区域和稀有类别的伪标签可靠性。
+
+为缓解伪标签噪声，已有研究通常采用 confidence threshold、class-balanced threshold、prototype guidance、uncertainty filtering、region consistency 等策略。它们分别从预测置信度、类别覆盖、特征原型相似性、不确定性估计或区域一致性角度筛选和修正目标域监督信号。本文也探索 Pseudo-label Quality Refinement (PQR)，包括 class-balanced 和 prototype-guided 方向，用于分析目标域伪标签可靠性。但当前实验显示，PQR 仅带来轻微或不稳定收益，因此在本文 v1.0 中仅作为辅助可靠性模块和 preliminary ablation，而不作为主贡献或主要性能来源。
+
+综上，本文不同于主要关注网络结构或投影几何的全景分割方法，也不同于主要关注全局域对齐的 UDA 方法；同时，它也不是通用 token pruning 方法在任意视觉任务上的直接复用。本文聚焦 OmniSAM 全景 UDA 训练阶段的 memory token 冗余问题，通过 MTC 和 SMR 构建 memory-efficient training 方案，并将伪标签可靠性建模作为辅助方向进行初步探索。

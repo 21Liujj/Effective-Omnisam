@@ -1,0 +1,7 @@
+sample,candidate_error_type,note,figure
+122,small object missing,"traffic light/sign/pole rich; candidate, not confirmed without predictions",experiments/tecma/figures/failure_cases_diagnostic/candidate_122_small_object_missing.png
+319,thin structure broken,"fence rich; candidate, not confirmed without predictions",experiments/tecma/figures/failure_cases_diagnostic/candidate_319_thin_structure_broken.png
+305,boundary erosion,"fence/wall boundary candidate, not confirmed without predictions",experiments/tecma/figures/failure_cases_diagnostic/candidate_305_boundary_erosion.png
+210,seam inconsistency,terrain + edge-region candidate; seam failure not automatically confirmed,experiments/tecma/figures/failure_cases_diagnostic/candidate_210_seam_inconsistency.png
+101,class confusion,traffic sign/fence/person candidate; not confirmed without predictions,experiments/tecma/figures/failure_cases_diagnostic/candidate_101_class_confusion.png
+24,pseudo-label noise suspected,terrain/vegetation boundary candidate; PL noise only a hypothesis,experiments/tecma/figures/failure_cases_diagnostic/candidate_24_pseudo-label_noise_suspected.png

@@ -1,0 +1,31 @@
+# Route 3-uncertainty: Class-Aware Token Protection with UNCERTAINTY score
+# Based on route3_rare0125_fixed, but uses prediction entropy instead of feature norm
+plugins:
+  pseudo_conf_mask:
+    enabled: true
+    threshold: 0.85
+    min_valid_ratio: 0.01
+    min_valid_pixels: 0
+    ignore_index: 255
+    fallback: skip
+  efficient_tam_memory:
+    enabled: true
+    mode: pool
+    compress_ratio: 0.5
+    pool_stride: 2
+    apply_in_pl: false
+    apply_in_train: true
+  efficient_sam2_sparse:
+    enabled: true
+    mode: class_aware
+    keep_ratio: 0.5
+    min_keep_tokens: 64
+    saliency_source: feature_norm
+    cache_saliency: true
+    fallback_full_when_uncertain: true
+    apply_in_pl: false
+    apply_in_train: true
+    rare_class_ids: [4, 5, 6, 7, 9]  # fence, pole, traffic_light, traffic_sign, terrain
+    rare_reserve_ratio: 0.125  # 12.5% reserve for rare classes
+    rare_selection_strategy: confidence
+    boundary_score_source: 'uncertainty'  # NEW: use prediction entropy for base scoring

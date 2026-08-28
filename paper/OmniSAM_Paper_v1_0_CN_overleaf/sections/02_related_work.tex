@@ -1,0 +1,14 @@
+\section{相关工作}
+\label{sec:related_work}
+
+\subsection{全景语义分割}
+全景语义分割关注 $360^\circ$ ERP 图像或其他全景表示上的像素级语义预测。后续正文将补充全景投影畸变、跨视角上下文和数据集协议相关工作。
+
+\subsection{无监督域适应语义分割}
+无监督域适应语义分割通常利用源域标注和目标域无标签数据，通过伪标签、自训练、对齐或一致性约束缩小域差异。后续将补充代表性 UDA 方法及其与本文设置的关系。
+
+\subsection{Segment Anything 与 memory-based 视觉模型}
+SAM 与 SAM2 提供了强视觉表征和可扩展的提示/记忆机制。本文关注将 SAM2 类 memory 机制用于全景语义分割时的训练开销问题。
+
+\subsection{Token-efficient 视觉模型}
+Token-efficient 方法通过 token pruning、token merging、稀疏注意力或压缩记忆降低视觉模型计算量。本文的 MTC 与 SMR 可视为面向 OmniSAM memory tokens 的训练期高效化尝试。

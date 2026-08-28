@@ -1,0 +1,16 @@
+\section{引言}
+\label{sec:introduction}
+
+全景语义分割旨在为 $360^\circ$ 场景中的每个像素预测语义类别，是自动驾驶、机器人感知、室外场景理解和大视场环境建模中的基础问题。与普通透视图语义分割相比，全景图像覆盖更完整的水平视场，能够同时观察车辆前后、道路两侧、远处建筑、天空区域以及行人和车辆等动态目标，因此更适合需要全局环境感知的应用。与此同时，全景图像也引入了普通针孔图像中不明显的困难：等距柱状投影会造成明显几何畸变，不同视场区域之间存在尺度与形状变化，同一语义实体可能跨越多个局部视图，且图像边界处还可能出现跨越首尾的语义关联。模型既需要在局部区域内完成精确分类和边界定位，又需要在长距离视场范围内维持语义一致性。这使得直接迁移常规语义分割模型到全景场景时，往往难以同时兼顾局部判别能力、全局上下文建模和边界质量。
+
+无监督域适应为全景语义分割提供了一条降低标注成本的路径。在典型设置中，源域如 Cityscapes 提供像素级标注，而目标域如 DensePASS 只提供无标签全景图像。由于全景图像的高质量逐像素标注需要覆盖更宽视场和更多畸变区域，标注成本通常高于普通透视图；完全依赖目标域监督训练并不现实。另一方面，源域透视图与目标域全景图之间存在成像方式、投影形态、场景分布、像素尺度和类别可见性差异，导致直接使用源域模型会受到明显域偏移影响。现有无监督域适应方法通常依赖伪标签、自训练、一致性约束或特征对齐来构造目标域监督信号，但全景图像具有跨视场结构和投影畸变，目标域伪标签在边界区域、稀有类别和畸变区域中更容易产生噪声。对于长条形全景图，局部错误还可能通过滑窗或序列式训练影响后续视图的监督信号。因此，如何在无目标域标注的条件下稳定利用全景上下文，并控制伪标签噪声，是全景 UDA 分割中的关键问题。
+
+OmniSAM 为上述问题提供了一个具有代表性的基础框架。它利用 SAM/SAM2 风格视觉基础模型的强表征能力，将全景图像组织为 patch 或 view sequence，并通过 memory mechanism 在序列内部传播历史视图信息。与仅对单个局部视图独立预测的策略相比，memory 机制能够在相邻或远距离视场之间保留上下文，使模型在处理长条形全景图时更容易维持道路、建筑、天空、车辆等类别的全局一致性，也有助于缓解局部窗口裁切带来的边界割裂问题。对于全景语义分割而言，这类记忆式建模尤其有价值，因为当前视图中的语义判断往往依赖前后视场中的结构线索，例如道路延展方向、建筑连续边界以及天空和地面之间的稳定关系。本文并不试图重新设计一个新的全景语义分割大模型，而是在 OmniSAM 已有框架之上，聚焦其训练阶段的效率瓶颈和目标域监督信号可靠性问题。
+
+本文关注的核心观察是：OmniSAM 的 memory attention 虽然对全景上下文建模有价值，但也引入了额外的 token 交互、显存占用和训练时间。全景图像通常需要被切分为多个 patch 或 view 依次处理，memory bank 会在训练过程中累积来自历史视图的表示。当 memory token 数量较大时，attention 操作需要在当前特征和大量历史 token 之间进行交互，其开销会随序列长度和记忆规模增加而上升。在 UDA 训练中，这一问题更加突出，因为训练过程通常同时包含源域监督损失、目标域伪标签损失以及额外的对齐或记忆计算，单次迭代开销直接影响实验可复现性和消融探索效率。然而，全景 patch sequence 中并非所有 memory token 都同等重要：部分 token 来自空间上高度冗余的邻域，部分 token 对当前预测贡献有限，部分背景区域在多个视图中重复出现。由此产生的 memory token redundancy 会限制 OmniSAM 在单卡算力受限场景下的训练效率。本文的问题可以概括为：如何在基本保持全景语义分割精度和边界一致性的同时，减少冗余 memory token 并降低 OmniSAM UDA 训练开销？
+
+围绕这一问题，本文提出 memory-efficient OmniSAM 训练框架，核心由 Memory Token Compression (MTC) 和 Sparse Memory Retrieval (SMR) 两个 train-only 插件组成。MTC 面向 memory 写入或传递阶段，通过空间池化或压缩将局部冗余 token 合并为更紧凑的记忆表示，从而降低后续 memory attention 的输入规模。SMR 面向 memory 读取阶段，根据 token saliency 或 top-k 选择策略保留更有价值的历史 token，使当前视图主要与信息量更高的 memory 表示交互。二者均不改变 OmniSAM 的任务定义和主体预测结构，而是作为训练阶段的高效化机制插入 memory 计算链路；在伪标签生成和验证口径上，则保持与原有 full protocol 的可比性。除 memory-efficient 主线外，本文还整理了 Pseudo-label Quality Refinement (PQR) 作为辅助可靠性模块，用于分析目标域伪标签噪声、类别保留和原型引导可靠性建模。需要强调的是，PQR 在当前 v1.0 中仅作为 preliminary ablation 和后续方向，不作为本文主要性能结论来源，也不与 MTC 和 SMR 混写为已经充分验证的最终组合贡献。
+
+实验上，本文在 Cityscapes $\rightarrow$ DensePASS full protocol、single seed 设置下对 memory-efficient 配置进行了初步验证。结果显示，MTC 与 SMR 在 mIoU 和 BFScore 基本保持的情况下，将训练耗时降低约 22.4\%，说明训练阶段 memory token 约简可以带来实际效率收益。进一步的 clean ablation/profile 表明，effective memory tokens 可从 32768 降至 4096，并伴随 memory attention time 的下降，从侧面支持 OmniSAM memory bank 中存在可压缩冗余。对于伪标签可靠性方向，R2 class-balanced refinement 只带来轻微 mIoU 改善，而 R2R4 prototype gate 未进一步提升最终 mIoU。因此，本文将其定位为辅助分析：它提示伪标签可靠性建模具有潜在价值，但当前证据不足以支撑将其写成强主贡献或最终性能提升来源。当前实验范围也保持保守，主要围绕本地可确认 checkpoint 与 DensePASS 评估链路展开，不将跨数据集验证或随机种子稳定性作为当前结论。
+
+本文贡献概括如下。第一，本文针对 OmniSAM 全景 UDA 训练阶段的 memory token redundancy 进行分析，并将问题定义为在保持全景语义分割精度和边界一致性的同时降低 memory 计算开销。第二，本文设计由 MTC 和 SMR 组成的 memory-efficient training framework，在 Cityscapes $\rightarrow$ DensePASS full protocol 的初步 single seed 实验中，基本保持 mIoU 与 BFScore，同时将训练耗时降低约 22.4\%。第三，本文整理 pseudo-label quality refinement 的辅助探索，通过 preliminary ablation 说明伪标签可靠性建模的潜在价值与当前限制，并明确当前 v1.0 的实验范围仍主要集中在 DensePASS single-seed 设置，后续需要扩展到更多数据集和多个随机种子设置。

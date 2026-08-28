@@ -1,0 +1,4 @@
+Run,Method,Memory-efficient,PL Refiner,mIoU,d_mIoU,mAcc,d_mAcc,PixAcc,FWIoU,mDice,BFScore,d_BFScore,step_time_s,epoch_time_s,peak_mem_GB,train_steps,val_steps,done
+R0,Efficient + Identity PL,yes,identity,60.02,N/A,71.71,N/A,88.58,80.66,72.59,39.35,N/A,3.393,1696.95,27.28,500/500,100/100,False
+R2,Efficient + R2 Class-balanced PL,yes,class-balanced,60.07,0.05,72.28,0.57,88.55,80.67,72.66,39.54,0.19,3.717,1859.23,27.29,500/500,100/100,False
+R2R4,Efficient + R2 Class-balanced + R4 Proto-gate,yes,class-balanced + proto-gate,60.05,-0.02,72.24,-0.05,88.54,80.64,72.64,39.57,0.03,3.749,1875.02,27.29,500/500,100/100,False

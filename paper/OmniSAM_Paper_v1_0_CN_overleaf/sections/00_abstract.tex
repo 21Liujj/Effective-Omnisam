@@ -1,0 +1,5 @@
+\begin{abstract}
+全景语义分割在自动驾驶和机器人感知中具有重要价值，但从针孔图像到 $360^\circ$ 全景图的无监督域适应仍面临显著域差异和伪标签噪声。本文 v1.0 围绕 Cityscapes $\rightarrow$ DensePASS 的 OmniSAM 设置，搭建记忆高效改进方法的论文母版。初步实验表明，在 full protocol single seed 下，记忆高效设置使 mIoU 从 60.26 变为 60.16，BFScore 从 39.97 变为 39.86，同时总训练耗时由 43m53s 降至 34m03s，单 iter 耗时由 5.27s 降至 4.09s，训练耗时下降约 22.4\%。伪标签优化作为辅助可靠性方向保留，后续将补充更完整分析。
+\end{abstract}
+
+\noindent\textbf{关键词：} 全景语义分割；无监督域适应；OmniSAM；记忆压缩；伪标签优化

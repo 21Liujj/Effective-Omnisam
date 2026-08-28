@@ -1,0 +1,29 @@
+# experiments/pl_refiner/configs/R0_baseline.yaml
+# R0 baseline: PseudoLabelRefiner mode=off.
+# All A/D/E plugins disabled — pure baseline matching base_last_20260425_232941.
+#
+# experiment_id      : R0_baseline
+# refiner_mode       : off
+# use_class_balance  : false
+# use_plq            : false
+# use_prototype      : false
+# use_correction     : false
+# use_memory_consistency: false
+# memory_config      : none
+# full_train_allowed : true
+# status             : IMPLEMENTED — mode=off is the default no-op path
+
+pseudo_label_refiner:
+  mode: "off"          # quoted to prevent YAML bool parsing
+  enable: false        # redundant with mode=off; belt-and-suspenders
+
+plugins:
+  pseudo_conf_mask:
+    enabled: false
+  efficient_tam_memory:
+    enabled: false
+  efficient_sam2_sparse:
+    enabled: false
+
+reuse_pl_dir: data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+train_max_iters: 5

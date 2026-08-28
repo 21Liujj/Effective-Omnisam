@@ -1,0 +1,34 @@
+# experiments/pl_refiner/configs/R4_proto_threshold_calibration.yaml
+# R4-3c diagnostic-only threshold calibration for current-batch prototype similarity.
+# Does NOT enable proto_gate filtering, correction, memory consistency, or loss changes.
+# It reuses R2 class-balanced valid_mask and records richer threshold/quantile statistics only.
+
+pseudo_label_refiner:
+  mode: "class_balanced"
+  enable: true
+  class_balance:
+    top_ratio: 0.67
+    min_pixels_per_class: 10
+    num_classes: 13
+  prototype_diagnostics:
+    enabled: true
+    source: "current_batch"
+    feat_key: "feat_t_de"
+    min_pixels_per_class: 10
+    eps: 1.0e-6
+    threshold_calibration: true
+    apply_filter: false
+    output_jsonl: "r4_proto_threshold_calibration_5step_diag.jsonl"
+
+plugins:
+  pseudo_conf_mask:
+    enabled: true
+    threshold: 0.85
+  efficient_tam_memory:
+    enabled: false
+  efficient_sam2_sparse:
+    enabled: false
+
+reuse_pl_dir: data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+train_max_iters: 5
+refiner_verbose_log: true

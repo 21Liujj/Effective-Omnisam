@@ -1,0 +1,17 @@
+\section{相关工作}
+\label{sec:related_work}
+
+\subsection{全景语义分割与域适应}
+全景语义分割需要在完整周向视场中进行像素级预测~\cite{ma2021densepass,yang2021omnirange}。ERP 表示便于使用二维网络处理，却会在高纬区域造成拉伸，并将几何连续的左右边界分离；跨越多个视场的目标还要求模型同时建模局部细节和全局结构。已有工作主要从畸变感知卷积、投影校正、多视图展开以及局部--全局上下文融合等方向提高全景表征能力~\cite{zhang2022bending,zheng2023dppass,zheng2023datr}。这些设计侧重适应全景几何，而本文研究既有全景框架中的记忆计算效率。
+
+无监督域适应语义分割利用有标注源域和无标注目标域缩小分布差异~\cite{tsai2018adaptsegnet,zou2018cbst}。特征或输出对齐旨在学习域不变表示，自训练与一致性约束则利用目标域预测构造监督~\cite{hoyer2022daformer,hoyer2022hrda,hoyer2023mic}。Cityscapes $\rightarrow$ DensePASS 不仅包含外观变化，还包含透视成像到全景投影的结构变化~\cite{zhang2024goodsam,zhong2025omnisam}；边界、畸变区域和稀有类别的伪标签因而更易出错。本文沿用 OmniSAM 的自训练流程，不重新设计完整域对齐框架，而是聚焦 memory token 约简，并辅助分析目标域监督的可靠性。相较于只优化特征分布对齐的路线，本文更关注既有适配流程在全景序列建模时产生的计算冗余。
+
+\subsection{SAM/SAM2 与 memory-based 视觉建模}
+SAM~\cite{kirillov2023segment} 系列基础模型提供了较强的通用视觉表示，SAM2~\cite{ravi2025sam2} 风格的 memory mechanism 进一步支持跨帧、跨视图和跨 patch 的信息传播。对于被切分为局部窗口的全景图，历史记忆可以连接道路、建筑、天空等大范围结构，减少窗口独立预测造成的不连续。OmniSAM~\cite{zhong2025omnisam} 将这一机制引入全景 UDA，使当前视图能够利用前后视场的上下文。
+
+memory-based 建模的代价是 attention 规模随历史 token 数增长。在长序列中，重复背景、相邻区域和弱相关历史表示会增加训练计算，并可能限制消融与参数搜索的效率。本文保持 SAM2 风格编码器和 OmniSAM 分割流程不变，只在进入 memory attention 前压缩与检索历史表示，以考察跨视场上下文是否能够在较低 token budget 下维持主要语义结构。该问题不同于缩短原始输入序列：被约简的是历史 memory，而当前视图的视觉特征与输出分辨率保持不变。
+
+\subsection{Token-efficient 建模与伪标签可靠性}
+视觉 Transformer 中，token pruning、token merging、sparse attention 和 memory compression 常依据重要性、相似性或结构先验减少冗余计算~\cite{rao2021dynamicvit,bolya2023tome,lu2023tokensharing}。相关研究多面向通用前向推理、分类或视频长序列；本文处理的是 OmniSAM UDA 训练中的 memory token。MTC 通过空间聚合压缩局部冗余，SMR 通过重要性排序保留更相关的历史 token，二者共同降低 memory attention 的输入规模，而不声称适用于所有视觉 token 或已验证部署端加速。
+
+伪标签是 UDA 自训练的核心监督来源，其错误会随训练累积~\cite{zou2018cbst,hoyer2023mic}。置信度阈值、类别均衡、不确定性估计、区域一致性和原型相似度均可用于过滤目标域预测。统一阈值容易偏向易分类类别，原型引导则依赖特征空间与类别中心的可靠性~\cite{zheng2024sfuda360,zheng2025sfuda360pp}。本文通过类别均衡与原型门控考察这些因素，但实验增益较小，因此 PQR 仅作为辅助探索，MTC+SMR 仍是唯一的方法主线。整体而言，本文连接了全景跨视场记忆与 token-efficient training：前者定义需要保留的上下文，后者控制为获得这些上下文所支付的训练成本。

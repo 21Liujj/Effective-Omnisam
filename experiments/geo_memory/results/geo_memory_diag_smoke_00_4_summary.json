@@ -1,0 +1,238 @@
+{
+  "jsonl_path": "experiments/geo_memory/results/geo_memory_diag.jsonl",
+  "exists": true,
+  "total_records": 36,
+  "expected_total_records": 36,
+  "batch_cnt_per_scenario": 2,
+  "frame_cnt_per_batch": 9,
+  "memory_frames_per_batch": 9,
+  "count_by_scenario_batch": {
+    "DensePASS-like|batch=0": 9,
+    "DensePASS-like|batch=1": 9,
+    "WildPASS-like|batch=0": 9,
+    "WildPASS-like|batch=1": 9
+  },
+  "reliable_distribution": {
+    "DensePASS-like": {
+      "True": 18
+    },
+    "WildPASS-like": {
+      "False": 18
+    }
+  },
+  "seam_region_distribution": {
+    "DensePASS-like": {
+      "left_seam": 4,
+      "non_seam": 10,
+      "right_seam": 4
+    },
+    "WildPASS-like": {
+      "unknown": 18
+    }
+  },
+  "token_mapping_violations": [],
+  "count_violations": [],
+  "selection_sparse_attention_loss_changed": false,
+  "sample_records": [
+    {
+      "global_step": 0,
+      "stage": "forward_smoke",
+      "mem_type": "target",
+      "tensor_order": 0,
+      "frame_idx": 0,
+      "frame_cnt": 9,
+      "true_erp_x_range": [
+        0,
+        1024
+      ],
+      "true_erp_y_range": [
+        0,
+        1024
+      ],
+      "inferred_erp_x_range_from_tensor_order": [
+        0,
+        1024
+      ],
+      "true_erp_x_range_reliable": true,
+      "seam_region": "left_seam",
+      "random_reverse_possible": false,
+      "tensor_order_inference_allowed": true,
+      "mem_hw": [
+        64,
+        64
+      ],
+      "memory_num_tokens": 4096,
+      "token_row_mapping": "token_row = token_idx // mem_w",
+      "token_col_mapping": "token_col = token_idx % mem_w",
+      "latitude_source": "mem_hw_token_row",
+      "seam_selection_enabled": false,
+      "selection_effect": "diagnosis_only",
+      "task": "0-4-forward-diagnosis-smoke",
+      "scenario": "DensePASS-like",
+      "dataset": "densepass",
+      "batch_idx": 0,
+      "memory_frame_idx": 0,
+      "selection_effect_checked": "unchanged"
+    },
+    {
+      "global_step": 0,
+      "stage": "forward_smoke",
+      "mem_type": "target",
+      "tensor_order": 1,
+      "frame_idx": 1,
+      "frame_cnt": 9,
+      "true_erp_x_range": [
+        384,
+        1408
+      ],
+      "true_erp_y_range": [
+        0,
+        1024
+      ],
+      "inferred_erp_x_range_from_tensor_order": [
+        384,
+        1408
+      ],
+      "true_erp_x_range_reliable": true,
+      "seam_region": "left_seam",
+      "random_reverse_possible": false,
+      "tensor_order_inference_allowed": true,
+      "mem_hw": [
+        64,
+        64
+      ],
+      "memory_num_tokens": 4096,
+      "token_row_mapping": "token_row = token_idx // mem_w",
+      "token_col_mapping": "token_col = token_idx % mem_w",
+      "latitude_source": "mem_hw_token_row",
+      "seam_selection_enabled": false,
+      "selection_effect": "diagnosis_only",
+      "task": "0-4-forward-diagnosis-smoke",
+      "scenario": "DensePASS-like",
+      "dataset": "densepass",
+      "batch_idx": 0,
+      "memory_frame_idx": 1,
+      "selection_effect_checked": "unchanged"
+    },
+    {
+      "global_step": 0,
+      "stage": "forward_smoke",
+      "mem_type": "target",
+      "tensor_order": 2,
+      "frame_idx": 2,
+      "frame_cnt": 9,
+      "true_erp_x_range": [
+        768,
+        1792
+      ],
+      "true_erp_y_range": [
+        0,
+        1024
+      ],
+      "inferred_erp_x_range_from_tensor_order": [
+        768,
+        1792
+      ],
+      "true_erp_x_range_reliable": true,
+      "seam_region": "non_seam",
+      "random_reverse_possible": false,
+      "tensor_order_inference_allowed": true,
+      "mem_hw": [
+        64,
+        64
+      ],
+      "memory_num_tokens": 4096,
+      "token_row_mapping": "token_row = token_idx // mem_w",
+      "token_col_mapping": "token_col = token_idx % mem_w",
+      "latitude_source": "mem_hw_token_row",
+      "seam_selection_enabled": false,
+      "selection_effect": "diagnosis_only",
+      "task": "0-4-forward-diagnosis-smoke",
+      "scenario": "DensePASS-like",
+      "dataset": "densepass",
+      "batch_idx": 0,
+      "memory_frame_idx": 2,
+      "selection_effect_checked": "unchanged"
+    },
+    {
+      "global_step": 0,
+      "stage": "forward_smoke",
+      "mem_type": "target",
+      "tensor_order": 3,
+      "frame_idx": 3,
+      "frame_cnt": 9,
+      "true_erp_x_range": [
+        1152,
+        2176
+      ],
+      "true_erp_y_range": [
+        0,
+        1024
+      ],
+      "inferred_erp_x_range_from_tensor_order": [
+        1152,
+        2176
+      ],
+      "true_erp_x_range_reliable": true,
+      "seam_region": "non_seam",
+      "random_reverse_possible": false,
+      "tensor_order_inference_allowed": true,
+      "mem_hw": [
+        64,
+        64
+      ],
+      "memory_num_tokens": 4096,
+      "token_row_mapping": "token_row = token_idx // mem_w",
+      "token_col_mapping": "token_col = token_idx % mem_w",
+      "latitude_source": "mem_hw_token_row",
+      "seam_selection_enabled": false,
+      "selection_effect": "diagnosis_only",
+      "task": "0-4-forward-diagnosis-smoke",
+      "scenario": "DensePASS-like",
+      "dataset": "densepass",
+      "batch_idx": 0,
+      "memory_frame_idx": 3,
+      "selection_effect_checked": "unchanged"
+    },
+    {
+      "global_step": 0,
+      "stage": "forward_smoke",
+      "mem_type": "target",
+      "tensor_order": 4,
+      "frame_idx": 4,
+      "frame_cnt": 9,
+      "true_erp_x_range": [
+        1536,
+        2560
+      ],
+      "true_erp_y_range": [
+        0,
+        1024
+      ],
+      "inferred_erp_x_range_from_tensor_order": [
+        1536,
+        2560
+      ],
+      "true_erp_x_range_reliable": true,
+      "seam_region": "non_seam",
+      "random_reverse_possible": false,
+      "tensor_order_inference_allowed": true,
+      "mem_hw": [
+        64,
+        64
+      ],
+      "memory_num_tokens": 4096,
+      "token_row_mapping": "token_row = token_idx // mem_w",
+      "token_col_mapping": "token_col = token_idx % mem_w",
+      "latitude_source": "mem_hw_token_row",
+      "seam_selection_enabled": false,
+      "selection_effect": "diagnosis_only",
+      "task": "0-4-forward-diagnosis-smoke",
+      "scenario": "DensePASS-like",
+      "dataset": "densepass",
+      "batch_idx": 0,
+      "memory_frame_idx": 4,
+      "selection_effect_checked": "unchanged"
+    }
+  ]
+}

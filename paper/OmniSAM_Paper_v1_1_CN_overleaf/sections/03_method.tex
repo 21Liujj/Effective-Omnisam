@@ -1,0 +1,129 @@
+\section{方法}
+\label{sec:method}
+
+\subsection{问题定义与整体框架}
+给定有标注源域
+\[
+\mathcal{D}_s=\{(x_s^i,y_s^i)\}_{i=1}^{N_s},
+\]
+和无标注目标域全景数据
+\[
+\mathcal{D}_t=\{x_t^j\}_{j=1}^{N_t},
+\]
+目标是在不使用目标域人工标注的条件下学习像素级预测模型。联合目标写为
+\[
+\min_{\theta}\ \mathcal{L}_{seg}(\mathcal{D}_s;\theta)+\lambda\mathcal{L}_{uda}(\mathcal{D}_t;\theta),
+\]
+其中 $\mathcal{L}_{seg}$ 为源域监督损失，$\mathcal{L}_{uda}$ 表示目标域伪标签监督或一致性约束。
+
+OmniSAM~\cite{zhong2025omnisam} 将全景图像表示为 patch/view sequence。对第 $t$ 个视图，SAM/SAM2-style 视觉编码器提取局部 query 表示，memory bank 保存此前视图的上下文，memory attention 将二者融合后交由解码器输出语义预测~\cite{kirillov2023segment,ravi2025sam2}。历史记忆能够连接局部窗口中被截断的道路、建筑和天空等结构，但其 token 数会随视图序列增长~\cite{rao2021dynamicvit,bolya2023tome,lu2023tokensharing}。本文在 attention 前依次插入 MTC 与 SMR：前者压缩空间冗余，后者选择内容相关的记忆；PQR 仅作用于目标域监督掩码。三个模块均不改变分割输出定义，其中 MTC+SMR 构成方法主线。整体流程如图~\ref{fig:overall_pipeline} 所示。本文在 OmniSAM 的 memory interaction 路径中依次引入 MTC 和 SMR，并将 PQR 保留为可选的目标域伪标签可靠性分支。
+
+\begin{figure}[t]
+    \centering
+    \fbox{
+        \parbox[c][0.18\textheight][c]{0.90\linewidth}{
+            \centering
+            \textbf{Overall Pipeline Placeholder}\\[0.6em]
+            OmniSAM Baseline
+            $\rightarrow$ Memory Token Compression (MTC)
+            $\rightarrow$ Sparse Memory Retrieval (SMR)\\[0.4em]
+            Optional Pseudo-label Quality Refinement (PQR)
+        }
+    }
+    \caption{本文提出的 memory-efficient OmniSAM 全景无监督域适应框架。最终图将展示 OmniSAM 主干、训练阶段的 MTC 与 SMR，以及可选的 PQR 辅助分支。}
+    \label{fig:overall_pipeline}
+\end{figure}
+
+\subsection{Memory Token Compression}
+设历史 memory token 为
+\[
+M=\{m_i\}_{i=1}^{N_m},\quad m_i\in\mathbb{R}^{C},
+\]
+保留空间结构时可写为
+\[
+M\in\mathbb{R}^{H_m\times W_m\times C},\quad N_m=H_mW_m.
+\]
+MTC 将 token 恢复为空间特征图，在局部邻域内进行池化聚合，并同步处理位置编码：
+\[
+\tilde{M}=\mathrm{Flatten}(\mathrm{Pool}(M;r)),
+\]
+\[
+\tilde{M}=\mathrm{MTC}(M),\quad
+\tilde{M}\in\mathbb{R}^{\tilde{N}_m\times C},\quad
+\tilde{N}_m<N_m.
+\]
+这里 $r$ 控制聚合尺度，通道维度保持不变。对 memory token 与位置编码采用一致的空间聚合，使压缩后每个 token 仍对应明确的全景局部区域。该操作不依据类别标签删除位置，而是以结构化方式合并重复背景和相邻区域的冗余表示，从而尽量保留主要语义信息。聚合尺度越大，token 数下降越明显，但局部边界与小目标细节也更容易被平滑。
+
+若 query token 数为 $N_q$，原始 dense memory attention 的主要交互复杂度近似为
+\[
+\mathcal{O}(N_qN_mC),
+\]
+压缩后变为
+\[
+\mathcal{O}(N_q\tilde{N}_mC).
+\]
+因此，$\tilde{N}_m\ll N_m$ 时可直接缩小后续 attention 的计算规模。复杂度表达式刻画的是 query--memory 的主要交互项，实际训练时间还包含视觉编码、解码、数据读取与优化器更新。MTC 只调整记忆密度，不改变当前视图的分辨率、主干和解码器，因此其效果可通过 memory token 数与 attention time 单独分析。
+
+\subsection{Sparse Memory Retrieval}
+结构化压缩后，历史记忆中仍可能存在与当前预测弱相关的 token。SMR 对每个 token 计算重要性
+\[
+s_i=g(m_i),
+\]
+并根据 keep ratio 确定 $K$，选取 top-$K$ 记忆及其位置编码：
+\[
+\hat{M}=\{m_i\mid i\in\mathrm{TopK}(s,K)\},\quad
+\hat{M}\in\mathbb{R}^{K\times C}.
+\]
+本文采用特征范数作为轻量 saliency：
+\[
+s_i=\lVert m_i\rVert_2.
+\]
+该分数无需额外监督或预测头，可直接从 memory 表示计算。选择数量由 $K=\lceil\rho\tilde{N}_m\rceil$ 给出，其中 $\rho\in(0,1]$ 为 keep ratio；相同索引同步作用于 memory token 与位置编码，避免破坏二者对应关系。
+MTC 与 SMR 串联为
+\[
+\hat{M}=\mathrm{SMR}(\mathrm{MTC}(M)),
+\]
+使实际 attention 复杂度近似为
+\[
+\mathcal{O}(N_qKC).
+\]
+MTC 负责空间聚合，SMR 负责内容选择，二者分别减少结构与信息冗余。若直接在原始记忆上做强稀疏选择，局部重复区域仍可能占据较多名额；先聚合再检索能够让选择过程作用于更紧凑的空间单元。另一方面，特征范数只反映表示响应强度，并不保证与所有类别的重要性完全一致。过低的 keep ratio 可能舍弃边界、小目标或低响应类别所需上下文，因此 token budget 需通过消融确定，而不能假设越小越优。
+
+\subsection{训练目标与辅助 PQR}
+目标域预测概率、伪标签和置信度定义为
+\[
+p_t=f_{\theta}(x_t),\qquad
+\hat{y}_t=\arg\max_c p_t(c),\quad q_t=\max_c p_t(c).
+\]
+基础可靠性掩码为~\cite{zou2018cbst,hoyer2023mic,zheng2025sfuda360pp}
+\[
+\mathcal{M}_t=\mathbb{I}(q_t\geq\tau).
+\]
+为减轻统一阈值对易分类类别的偏向，类别均衡过滤使用类别相关阈值：
+\[
+\mathcal{M}_t(u)=\mathbb{I}\!\left(q_t(u)\geq\tau_{\hat{y}_t(u)}\right).
+\]
+原型引导过滤以目标特征 $z_t(u)$ 与预测类别原型 $p_{\hat{y}_t(u)}$ 的相似度衡量可靠性：
+\[
+r_t(u)=\mathrm{sim}\!\left(z_t(u),p_{\hat{y}_t(u)}\right),
+\]
+\[
+\mathcal{G}_t(u)=\mathbb{I}\!\left(r_t(u)\geq\gamma_{\hat{y}_t(u)}\right),\qquad
+\mathcal{M}^{pqr}_t=\mathcal{M}_t\cap\mathcal{G}_t.
+\]
+该分支仅用于辅助考察伪标签可靠性，不属于 MTC+SMR 的效率机制。类别相关阈值试图缓解统一阈值对易分类类别的偏向，原型相似度则要求预测类别与目标域特征结构一致；二者都可能提高伪标签纯度，也可能因过滤过强而降低有效监督覆盖，因此需要与 identity 设置在同一伪标签协议下比较。
+
+最终训练损失为
+\[
+\mathcal{L}=\mathcal{L}_{src}+\lambda_t\mathcal{L}_{tgt},
+\qquad
+\mathcal{L}_{src}=\mathrm{CE}\big(f_{\theta}(x_s),y_s\big),
+\]
+\[
+\mathcal{L}_{tgt}
+=
+\frac{1}{|\mathcal{M}^{pqr}_t|}
+\sum_{u\in\mathcal{M}^{pqr}_t}
+\mathrm{CE}\big(f_{\theta}(x_t)_u,\hat{y}_t(u)\big).
+\]
+未启用 PQR 时，监督区域退化为基础伪标签有效掩码。若掩码包含的像素过少，目标域梯度也会随之减弱，这解释了 PQR 需要保持辅助定位。MTC 与 SMR 只改变 memory attention 的输入规模，不改变上述损失形式；因此效率模块的对比使用相同监督目标，观察到的训练成本变化可以主要归因于 memory 路径。

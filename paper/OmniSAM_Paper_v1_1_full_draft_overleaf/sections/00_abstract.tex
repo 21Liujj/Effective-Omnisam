@@ -1,0 +1,5 @@
+\begin{abstract}
+全景语义分割旨在对 $360^\circ$ 场景进行像素级语义理解，是自动驾驶、机器人感知和室外全景场景分析中的重要基础任务。由于目标域全景数据标注成本高，Cityscapes $\rightarrow$ DensePASS 等无监督域适应设置需要利用有标注透视源域和无标注全景目标域进行训练，但跨成像模型、投影畸变、视场范围和伪标签噪声使该问题具有挑战性。OmniSAM 借助 SAM/SAM2 风格视觉基础模型与 memory mechanism 建模全景 patch 序列中的跨视场上下文，有助于维持语义一致性和边界质量，但训练阶段大量 memory token 交互也带来额外计算开销。本文在不重新设计全景语义分割大模型的前提下，研究 OmniSAM 框架中的 memory token redundancy，并提出 memory-efficient OmniSAM。具体而言，Memory Token Compression (MTC) 通过空间压缩减少冗余记忆表示，Sparse Memory Retrieval (SMR) 通过稀疏选择保留更有价值的 memory token。本文还将 Pseudo-label Quality Refinement 作为辅助可靠性模块进行初步分析，用于讨论目标域伪标签可靠性，但不将其作为当前主贡献。初步实验表明，在 full DensePASS protocol、Cityscapes $\rightarrow$ DensePASS、single seed 设置下，本文方法在基本保持精度和边界质量的同时，使 mIoU 从 60.26 变为 60.16，BFScore 从 39.97 变为 39.86，总训练耗时由 43m53s 降至 34m03s，单 iter 耗时由 5.27s 降至 4.09s，训练耗时下降约 22.4\%。当前结果仍需在更多数据集和多 seed 设置下进一步验证。
+\end{abstract}
+
+\noindent\textbf{关键词：} 全景语义分割；无监督域适应；OmniSAM；记忆机制；Token 压缩；高效训练

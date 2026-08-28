@@ -1,0 +1,2 @@
+Prediction masks for canonical Phase 7.2/7.3 configs are missing; no inference/eval was run.
+This directory contains input/GT candidate visualizations only, not confirmed model failure panels.

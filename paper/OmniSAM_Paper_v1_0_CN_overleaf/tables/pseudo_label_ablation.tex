@@ -1,0 +1,17 @@
+\begin{table}[t]
+  \centering
+  \caption{Preliminary pseudo-label refinement ablation under the reused/fixed pseudo-label setting. The results are exploratory and should not be interpreted as significant improvement.}
+  \label{tab:pseudo_label_ablation}
+  \begin{tabular}{lccc}
+    \toprule
+    配置 & mIoU & 相比 R0 & 相比上一配置 \\
+    \midrule
+    R0\_identity & 60.02 & -- & -- \\
+    R2\_class\_balanced & 60.07 & +0.05 & +0.05 \\
+    R2R4\_proto\_gate & 60.05 & +0.03 & -0.02 vs R2 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.5em}
+  \footnotesize{R6\_memory\_plq is a TODO / not implemented result and is not included as a completed experiment.}
+\end{table}

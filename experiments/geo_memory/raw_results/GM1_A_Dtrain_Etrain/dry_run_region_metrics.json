@@ -1,0 +1,105 @@
+{
+  "status": "ok",
+  "synthetic_self_test": {
+    "status": "passed",
+    "checks": {
+      "overall_miou": true,
+      "seam_miou": true,
+      "polar_miou": true,
+      "equator_miou": true,
+      "ignore_index_excluded": true
+    },
+    "expected": {
+      "overall_miou": 0.9231678486997636,
+      "seam_miou": 1.0,
+      "polar_miou": 0.4838709677419355,
+      "equator_miou": 0.9131944444444444
+    },
+    "actual": {
+      "overall_miou": 0.9231678486997636,
+      "seam_miou": 1.0,
+      "polar_miou": 0.4838709677419355,
+      "equator_miou": 0.9131944444444444
+    },
+    "metrics": {
+      "image_shape": [
+        8,
+        8
+      ],
+      "ignore_index": 255,
+      "region_definition": "experiments.geo_memory.geometry_ops.build_region_mask",
+      "regions": {
+        "overall": {
+          "miou": 0.9231678486997636,
+          "per_class_iou": {
+            "0": 0.9574468085106383,
+            "1": 0.8888888888888888
+          },
+          "valid_pixels": 63
+        },
+        "seam": {
+          "miou": 1.0,
+          "per_class_iou": {
+            "0": 1.0,
+            "1": 1.0
+          },
+          "valid_pixels": 15
+        },
+        "polar": {
+          "miou": 0.4838709677419355,
+          "per_class_iou": {
+            "0": 0.967741935483871,
+            "1": 0.0
+          },
+          "valid_pixels": 31
+        },
+        "equator": {
+          "miou": 0.9131944444444444,
+          "per_class_iou": {
+            "0": 0.8888888888888888,
+            "1": 0.9375
+          },
+          "valid_pixels": 24
+        }
+      },
+      "per_class_iou_by_region_status": "implemented"
+    }
+  },
+  "directory_eval": {
+    "status": "ok",
+    "num_images": 5,
+    "regions": {
+      "overall": {
+        "mean_miou": 0.4534067288677467,
+        "valid_pixels": 3890963,
+        "num_images_with_metric": 5
+      },
+      "seam": {
+        "mean_miou": 0.3544152778088513,
+        "valid_pixels": 120273,
+        "num_images_with_metric": 5
+      },
+      "polar": {
+        "mean_miou": 0.4725170393563811,
+        "valid_pixels": 1195464,
+        "num_images_with_metric": 5
+      },
+      "equator": {
+        "mean_miou": 0.4595288045245593,
+        "valid_pixels": 2612118,
+        "num_images_with_metric": 5
+      }
+    },
+    "matched_masks": 5,
+    "failed_masks": []
+  },
+  "outputs": {
+    "json": "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run_region_metrics.json",
+    "md": "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run_region_metrics.md"
+  },
+  "per_class_iou_by_region_status": "implemented",
+  "training_run": false,
+  "model_changed": false,
+  "memory_selection_changed": false,
+  "loss_changed": false
+}

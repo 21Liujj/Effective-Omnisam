@@ -1,0 +1,36 @@
+# experiments/pl_refiner/configs/R1_conf_mask.yaml
+# R1 conf_mask: online confidence masking via pseudo_conf_mask plugin.
+# This is the paper-ablation R1 (baseline + confidence filtering at thr=0.85).
+# Equivalent to existing A_ccpm / pseudo_conf_mask = enabled run.
+#
+# NAMING CLARIFICATION:
+#   R1_identity_sanity.yaml  = engineering sanity check (mode=identity, no-op)
+#   R1_conf_mask.yaml        = paper ablation R1 (mode=conf_mask / plugin enabled)
+#   These are TWO SEPARATE configs. Do NOT conflate them.
+#
+# experiment_id      : R1_conf_mask
+# refiner_mode       : conf_mask
+# use_class_balance  : false
+# use_plq            : false
+# use_prototype      : false
+# use_correction     : false
+# use_memory_consistency: false
+# memory_config      : none
+# full_train_allowed : true
+# status             : IMPLEMENTED — uses existing pseudo_conf_mask plugin
+
+pseudo_label_refiner:
+  mode: "conf_mask"   # conceptual label; actual enforcement via plugin below
+  enable: true
+
+plugins:
+  pseudo_conf_mask:
+    enabled: true
+    threshold: 0.85
+  efficient_tam_memory:
+    enabled: false
+  efficient_sam2_sparse:
+    enabled: false
+
+reuse_pl_dir: data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+train_max_iters: 5

@@ -1,0 +1,16 @@
+TeCMA Phase 7.2 + 7.3 materials package
+
+Included contents:
+- experiments/tecma/notes/step_20_21_diagnostic_visualization_report.md
+  Main diagnostic visualization report for TeCMA Phase 7.2 + 7.3.
+- experiments/tecma/figures/qualitative_diagnostic/
+  Candidate qualitative diagnostic panels, inputs, GT color maps, overlays, manifest.
+- experiments/tecma/figures/failure_cases_diagnostic/
+  Candidate failure-case panels and README noting no confirmed failure cases without canonical predictions.
+- experiments/tecma/notes/step_19_per_class_iou_diagnostic_report.md
+  Diagnostic precursor referenced by Phase 7.2.
+- experiments/tecma/tables/per_class_iou_diagnostic.csv / .md
+  Per-class diagnostic table.
+
+Important limitation from the report:
+Canonical prediction masks for the requested four configs were not found; exported panels are diagnostic candidates built from input + ground truth, not confirmed model-comparison failure cases.

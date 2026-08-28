@@ -1,0 +1,49 @@
+[
+  {
+    "config": "cams",
+    "n_seeds": 5,
+    "records": [
+      {
+        "seed": 100,
+        "dir": "experiments/tecma/runs/cams_seed100_20260825_015900",
+        "mIoU": 59.99,
+        "BFScore": 39.48,
+        "step_time": 2.2801753191351892
+      },
+      {
+        "seed": 1,
+        "dir": "experiments/tecma/runs/cams_seed1_20260824_185826",
+        "mIoU": 59.99,
+        "BFScore": 39.43,
+        "step_time": 2.260713802985847
+      },
+      {
+        "seed": 2,
+        "dir": "experiments/tecma/runs/cams_seed2_20260824_204347",
+        "mIoU": 59.89,
+        "BFScore": 39.44,
+        "step_time": 2.2325876414105297
+      },
+      {
+        "seed": 3,
+        "dir": "experiments/tecma/runs/cams_seed3_20260824_223005",
+        "mIoU": 59.94,
+        "BFScore": 39.66,
+        "step_time": 2.2427958767712117
+      },
+      {
+        "seed": 42,
+        "dir": "experiments/tecma/runs/cams_seed42_20260825_001607",
+        "mIoU": 59.97,
+        "BFScore": 39.31,
+        "step_time": 2.2952713410928847
+      }
+    ],
+    "mIoU_mean": 59.956,
+    "mIoU_std": 0.042190046219458675,
+    "BFScore_mean": 39.464,
+    "BFScore_std": 0.12660963628412925,
+    "step_time_mean": 2.2623087962791324,
+    "step_time_std": 0.025847567959173215
+  }
+]

@@ -1,0 +1,17 @@
+\section{实验设置与主结果}
+\label{sec:experiments}
+
+\subsection{数据集}
+当前 v1.0 主实验基于 Cityscapes $\rightarrow$ DensePASS / sam2\_s / 13cls 设置。WildPASS、SynPASS 和 indoor 设置将在后续实验中进一步补充。
+
+\subsection{指标}
+本文使用 mIoU、BFScore、训练耗时、单 iter 耗时等指标评估分割性能与训练效率。不同表格的实验口径将在 caption 中明确区分。
+
+\subsection{实现细节}
+实现细节包括 SAM2 backbone、LoRA 微调、伪标签生成、滑窗验证和 memory-efficient train-only 设置。当前仅保留占位，后续补充完整参数。
+
+\subsection{主结果}
+\input{tables/main_results}
+
+\subsection{效率分析}
+\input{tables/efficiency_analysis}

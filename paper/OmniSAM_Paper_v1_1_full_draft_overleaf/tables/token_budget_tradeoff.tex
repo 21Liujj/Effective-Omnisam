@@ -1,0 +1,16 @@
+\begin{table}[t]
+  \centering
+  \caption{Token budget trade-off. The 100\%, 75\%, 50\%, and 25\% rows form an E-only curve, while the final 12.5\% row is the D+E endpoint.}
+  \label{tab:token_budget_tradeoff}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Token budget & Tokens & mIoU & BFScore & Step time / Attention time \\
+    \midrule
+    100\% & 32768 & 60.26 & 39.59 & 2.4089 / 117.56 \\
+    75\% & 24576 & 60.12 & 39.28 & 2.4614 / 98.62 \\
+    50\% & 16384 & 60.09 & 39.23 & 2.3798 / 79.69 \\
+    25\% & 8192 & 60.10 & 39.29 & 2.2941 / 60.54 \\
+    final 12.5\% & 4096 & 60.02 & 39.23 & 2.3153 / 51.92 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

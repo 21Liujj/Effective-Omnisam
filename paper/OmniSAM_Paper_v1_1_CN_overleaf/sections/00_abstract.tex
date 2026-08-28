@@ -1,0 +1,5 @@
+\begin{abstract}
+全景语义分割的无监督域适应需要从有标注透视源域迁移至无标注全景目标域，面临投影畸变、跨视场依赖和伪标签噪声等挑战。OmniSAM 通过 SAM2 风格的 memory mechanism 建模全景视图序列，但大量历史 memory token 的交互增加了训练成本。本文提出由 Memory Token Compression (MTC) 与 Sparse Memory Retrieval (SMR) 组成的高效训练方案：MTC 聚合空间相邻的冗余记忆，SMR 按重要性稀疏选择历史 token，从而缩小进入 memory attention 的表示规模；伪标签质量优化仅作为辅助探索。在 Cityscapes $\rightarrow$ DensePASS 的 sam2\_s、13 类 single-seed 实验中，训练时间下降约 22.4\%，mIoU 由 60.26 变为 60.16，BFScore 由 39.97 变为 39.86。消融结果进一步表明，token 预算降低与 attention 开销下降直接相关，但更强压缩可能影响边界和小目标。定性比较中，两种配置保持相近的主要场景结构，局部差异与边界指标的轻微下降一致。该结果支持以适度精度代价换取训练效率，跨数据集与多随机种子稳定性仍需验证。
+\end{abstract}
+
+\noindent\textbf{关键词：} 全景语义分割；无监督域适应；OmniSAM；记忆机制；Token 压缩；高效训练

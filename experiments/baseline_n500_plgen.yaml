@@ -1,0 +1,7 @@
+plugins:
+  efficient_sam2:
+    enabled: false
+  efficient_sam2_sparse:
+    enabled: false
+  pano_smb:
+    enabled: false

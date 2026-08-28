@@ -1,0 +1,13 @@
+\begin{table}[t]
+  \centering
+  \caption{Cityscapes $\rightarrow$ DensePASS full protocol, single seed. BFScore comes from the original full-protocol validation log lines marked as [ValSummary], because `metrics.jsonl` does not store BFScore.}
+  \label{tab:main_results}
+  \begin{tabular}{lccccl}
+    \toprule
+    方法 & mIoU & BFScore & 总训练耗时 & 单 iter 耗时 & 备注 \\
+    \midrule
+    OmniSAM baseline & 60.26 & 39.97 & 43m53s & 5.27s & baseline \\
+    Ours w/ MTC+SMR & 60.16 & 39.86 & 34m03s & 4.09s & train-only efficient memory \\
+    \bottomrule
+  \end{tabular}
+\end{table}

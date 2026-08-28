@@ -1,0 +1,89 @@
+{
+  "configs": {
+    "A_ccpm": {
+      "ckpt": "experiments/tecma/runs/A_ccpm_seed1_20260616_104911/checkpoints/Cityscapes_13cls/sam2_s/best_iou60.26.pth",
+      "out_dir": "/root/autodl-tmp/OmniSAM-main/experiments/tecma/eval_predictions_confirmed/A_ccpm",
+      "saved": 0,
+      "skipped": 12,
+      "elapsed_sec": 6.17,
+      "files": [
+        "101_pred_argmax.png",
+        "111_pred_argmax.png",
+        "122_pred_argmax.png",
+        "155_pred_argmax.png",
+        "210_pred_argmax.png",
+        "24_pred_argmax.png",
+        "263_pred_argmax.png",
+        "289_pred_argmax.png",
+        "305_pred_argmax.png",
+        "319_pred_argmax.png",
+        "363_pred_argmax.png",
+        "68_pred_argmax.png"
+      ]
+    },
+    "A_Dtrain": {
+      "ckpt": "experiments/tecma/runs/A_Dtrain_seed1_20260616_111019/checkpoints/Cityscapes_13cls/sam2_s/best_iou60.12.pth",
+      "out_dir": "/root/autodl-tmp/OmniSAM-main/experiments/tecma/eval_predictions_confirmed/A_Dtrain",
+      "saved": 0,
+      "skipped": 12,
+      "elapsed_sec": 6.77,
+      "files": [
+        "101_pred_argmax.png",
+        "111_pred_argmax.png",
+        "122_pred_argmax.png",
+        "155_pred_argmax.png",
+        "210_pred_argmax.png",
+        "24_pred_argmax.png",
+        "263_pred_argmax.png",
+        "289_pred_argmax.png",
+        "305_pred_argmax.png",
+        "319_pred_argmax.png",
+        "363_pred_argmax.png",
+        "68_pred_argmax.png"
+      ]
+    },
+    "A_Etrain_keep025": {
+      "ckpt": "experiments/tecma/runs/token_budget/A_Etrain_keep025_seed1_20260617_114629/checkpoints/Cityscapes_13cls/sam2_s/best_iou60.10.pth",
+      "out_dir": "/root/autodl-tmp/OmniSAM-main/experiments/tecma/eval_predictions_confirmed/A_Etrain_keep025",
+      "saved": 0,
+      "skipped": 12,
+      "elapsed_sec": 6.23,
+      "files": [
+        "101_pred_argmax.png",
+        "111_pred_argmax.png",
+        "122_pred_argmax.png",
+        "155_pred_argmax.png",
+        "210_pred_argmax.png",
+        "24_pred_argmax.png",
+        "263_pred_argmax.png",
+        "289_pred_argmax.png",
+        "305_pred_argmax.png",
+        "319_pred_argmax.png",
+        "363_pred_argmax.png",
+        "68_pred_argmax.png"
+      ]
+    },
+    "A_Dtrain_Etrain": {
+      "ckpt": "experiments/tecma/runs/A_Dtrain_Etrain_seed1_20260616_121135/checkpoints/Cityscapes_13cls/sam2_s/best_iou60.02.pth",
+      "out_dir": "/root/autodl-tmp/OmniSAM-main/experiments/tecma/eval_predictions_confirmed/A_Dtrain_Etrain",
+      "saved": 0,
+      "skipped": 12,
+      "elapsed_sec": 5.85,
+      "files": [
+        "101_pred_argmax.png",
+        "111_pred_argmax.png",
+        "122_pred_argmax.png",
+        "155_pred_argmax.png",
+        "210_pred_argmax.png",
+        "24_pred_argmax.png",
+        "263_pred_argmax.png",
+        "289_pred_argmax.png",
+        "305_pred_argmax.png",
+        "319_pred_argmax.png",
+        "363_pred_argmax.png",
+        "68_pred_argmax.png"
+      ]
+    }
+  },
+  "total_elapsed_sec": 25.07
+}

@@ -1,0 +1,38 @@
+{
+  "checks": [
+    "top/bottom rows marked high-latitude relative to middle rows",
+    "left/right columns have stronger seam prior than middle columns",
+    "64x64 region ids have clear priority and sum to 4096",
+    "1024x1024 -> 64x64 categorical resize preserves expected regions",
+    "assign_region_from_xy/box returns seam, polar, seam_polar, equator, unknown",
+    "full-height boxes are not collapsed to polar/equator; non-seam full-height returns unknown",
+    "token-row top/middle/bottom counts sum to 4096"
+  ],
+  "status": "passed",
+  "mask64_counts": {
+    "seam": 384,
+    "polar": 896,
+    "seam_polar": 128,
+    "equator": 2688
+  },
+  "resized_1024_to_64_counts": {
+    "seam": 384,
+    "polar": 896,
+    "seam_polar": 128,
+    "equator": 2688
+  },
+  "token_row_counts_64x64": {
+    "top": 512,
+    "middle": 3072,
+    "bottom": 512
+  },
+  "notes": [
+    "Latitude/polar/equator token diagnostics depend on token_row only.",
+    "Seam diagnostics depend on horizontal coordinate and must be gated by reliable true ERP x-range.",
+    "Box-level polar/equator assignment is coarse and unreliable for full-height patches; token-row labels are preferred.",
+    "Task 1-2 adds explicit full-height box tests: non-seam full-height boxes return unknown, seam full-height boxes keep seam only."
+  ],
+  "training_run": false,
+  "memory_selection_changed": false,
+  "loss_changed": false
+}

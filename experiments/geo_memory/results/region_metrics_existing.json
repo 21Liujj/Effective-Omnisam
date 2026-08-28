@@ -1,0 +1,469 @@
+{
+  "status": "ok",
+  "run_level": "L2 diagnosis",
+  "training_run": false,
+  "model_changed": false,
+  "memory_selection_changed": false,
+  "loss_changed": false,
+  "gt_dir": "data/DensePASS/gtFine/val",
+  "gt_mask_count": 100,
+  "ignore_index": 255,
+  "num_classes": 13,
+  "class_mapping": "DensePASS13 mapping from dataset/DensePASS.py: [0,1,2,3,4,5,6,7,8,9,10,11,11,12,12,12,255,12,12]; ignore_index=255; num_classes=13; valid GT follows validation.py fast_hist filter GT∈[0,13).",
+  "methods": {
+    "GM0_baseline_omnisam": {
+      "method": "GM0 baseline_omnisam",
+      "prediction_candidates": [
+        "experiments/tecma/eval_predictions_confirmed/baseline_omnisam",
+        "experiments/tecma/runs/baseline_omnisam_seed1_20260616_102834/predictions",
+        "experiments/tecma/runs/baseline_omnisam_seed1_20260616_102834/debug_pred_vis"
+      ],
+      "selected_prediction_dir": "N/A",
+      "prediction_status": "all candidate prediction paths missing",
+      "gt_dir": "data/DensePASS/gtFine/val",
+      "matched": 0,
+      "missing_pred": 100,
+      "missing_gt": 0,
+      "size_mismatch": 0,
+      "matched_ids": [],
+      "missing_pred_sample": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "21",
+        "22",
+        "24",
+        "38",
+        "44",
+        "46",
+        "54",
+        "59",
+        "65",
+        "66",
+        "67",
+        "68",
+        "81",
+        "92",
+        "99",
+        "100"
+      ],
+      "missing_gt_sample": [],
+      "size_mismatch_sample": [],
+      "dry_run": "N/A",
+      "full_eval": "N/A",
+      "polar_error_ratio": "N/A",
+      "label_range_check": "N/A"
+    },
+    "GM1_A_Dtrain_Etrain": {
+      "method": "GM1 tecmem_base / A_Dtrain_Etrain",
+      "prediction_candidates": [
+        "experiments/tecma/eval_predictions_confirmed/A_Dtrain_Etrain"
+      ],
+      "selected_prediction_dir": "experiments/tecma/eval_predictions_confirmed/A_Dtrain_Etrain",
+      "prediction_status": "found",
+      "gt_dir": "data/DensePASS/gtFine/val",
+      "matched": 12,
+      "missing_pred": 88,
+      "missing_gt": 0,
+      "size_mismatch": 0,
+      "matched_ids": [
+        "24",
+        "68",
+        "101",
+        "111",
+        "122",
+        "155",
+        "210",
+        "263",
+        "289",
+        "305",
+        "319",
+        "363"
+      ],
+      "missing_pred_sample": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "21",
+        "22",
+        "38",
+        "44",
+        "46",
+        "54",
+        "59",
+        "65",
+        "66",
+        "67",
+        "81",
+        "92",
+        "99",
+        "100",
+        "102",
+        "103"
+      ],
+      "missing_gt_sample": [],
+      "size_mismatch_sample": [],
+      "dry_run": {
+        "ids": [
+          "24",
+          "68",
+          "101",
+          "111",
+          "122"
+        ],
+        "command": [
+          "/root/miniconda3/envs/omnisam/bin/python",
+          "experiments/geo_memory/scripts/eval_region_metrics.py",
+          "--pred-dir",
+          "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run/pred",
+          "--gt-dir",
+          "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run/gt_densepass13",
+          "--ignore-index",
+          "255",
+          "--seam-width",
+          "32",
+          "--polar-band-ratio",
+          "0.15",
+          "--num-classes",
+          "13",
+          "--output-json",
+          "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run_region_metrics.json",
+          "--output-md",
+          "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run_region_metrics.md",
+          "--self-test"
+        ],
+        "returncode": 0,
+        "stdout_tail": "{\n  \"status\": \"ok\",\n  \"synthetic_self_test\": {\n    \"status\": \"passed\",\n    \"checks\": {\n      \"overall_miou\": true,\n      \"seam_miou\": true,\n      \"polar_miou\": true,\n      \"equator_miou\": true,\n      \"ignore_index_excluded\": true\n    },\n    \"expected\": {\n      \"overall_miou\": 0.9231678486997636,\n      \"seam_miou\": 1.0,\n      \"polar_miou\": 0.4838709677419355,\n      \"equator_miou\": 0.9131944444444444\n    },\n    \"actual\": {\n      \"overall_miou\": 0.9231678486997636,\n      \"seam_miou\": 1.0,\n      \"polar_miou\": 0.4838709677419355,\n      \"equator_miou\": 0.9131944444444444\n    },\n    \"metrics\": {\n      \"image_shape\": [\n        8,\n        8\n      ],\n      \"ignore_index\": 255,\n      \"region_definition\": \"experiments.geo_memory.geometry_ops.build_region_mask\",\n      \"regions\": {\n        \"overall\": {\n          \"miou\": 0.9231678486997636,\n          \"per_class_iou\": {\n            \"0\": 0.9574468085106383,\n            \"1\": 0.8888888888888888\n          },\n          \"valid_pixels\": 63\n        },\n        \"seam\": {\n          \"miou\": 1.0,\n          \"per_class_iou\": {\n            \"0\": 1.0,\n            \"1\": 1.0\n          },\n          \"valid_pixels\": 15\n        },\n        \"polar\": {\n          \"miou\": 0.4838709677419355,\n          \"per_class_iou\": {\n            \"0\": 0.967741935483871,\n            \"1\": 0.0\n          },\n          \"valid_pixels\": 31\n        },\n        \"equator\": {\n          \"miou\": 0.9131944444444444,\n          \"per_class_iou\": {\n            \"0\": 0.8888888888888888,\n            \"1\": 0.9375\n          },\n          \"valid_pixels\": 24\n        }\n      },\n      \"per_class_iou_by_region_status\": \"implemented\"\n    }\n  },\n  \"directory_eval\": {\n    \"status\": \"ok\",\n    \"num_images\": 5,\n    \"regions\": {\n      \"overall\": {\n        \"mean_miou\": 0.4534067288677467,\n        \"valid_pixels\": 3890963,\n        \"num_images_with_metric\": 5\n      },\n      \"seam\": {\n        \"mean_miou\": 0.3544152778088513,\n        \"valid_pixels\": 120273,\n        \"num_images_with_metric\": 5\n      },\n      \"polar\": {\n        \"mean_miou\": 0.4725170393563811,\n        \"valid_pixels\": 1195464,\n        \"num_images_with_metric\": 5\n      },\n      \"equator\": {\n        \"mean_miou\": 0.4595288045245593,\n        \"valid_pixels\": 2612118,\n        \"num_images_with_metric\": 5\n      }\n    },\n    \"matched_masks\": 5,\n    \"failed_masks\": []\n  },\n  \"outputs\": {\n    \"json\": \"experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run_region_metrics.json\",\n    \"md\": \"experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run_region_metrics.md\"\n  },\n  \"per_class_iou_by_region_status\": \"implemented\",\n  \"training_run\": false,\n  \"model_changed\": false,\n  \"memory_selection_changed\": false,\n  \"loss_changed\": false\n}\n",
+        "stderr_tail": "",
+        "output_json": "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run_region_metrics.json",
+        "output_md": "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run_region_metrics.md",
+        "parsed": {
+          "status": "ok",
+          "synthetic_self_test": {
+            "status": "passed",
+            "checks": {
+              "overall_miou": true,
+              "seam_miou": true,
+              "polar_miou": true,
+              "equator_miou": true,
+              "ignore_index_excluded": true
+            },
+            "expected": {
+              "overall_miou": 0.9231678486997636,
+              "seam_miou": 1.0,
+              "polar_miou": 0.4838709677419355,
+              "equator_miou": 0.9131944444444444
+            },
+            "actual": {
+              "overall_miou": 0.9231678486997636,
+              "seam_miou": 1.0,
+              "polar_miou": 0.4838709677419355,
+              "equator_miou": 0.9131944444444444
+            },
+            "metrics": {
+              "image_shape": [
+                8,
+                8
+              ],
+              "ignore_index": 255,
+              "region_definition": "experiments.geo_memory.geometry_ops.build_region_mask",
+              "regions": {
+                "overall": {
+                  "miou": 0.9231678486997636,
+                  "per_class_iou": {
+                    "0": 0.9574468085106383,
+                    "1": 0.8888888888888888
+                  },
+                  "valid_pixels": 63
+                },
+                "seam": {
+                  "miou": 1.0,
+                  "per_class_iou": {
+                    "0": 1.0,
+                    "1": 1.0
+                  },
+                  "valid_pixels": 15
+                },
+                "polar": {
+                  "miou": 0.4838709677419355,
+                  "per_class_iou": {
+                    "0": 0.967741935483871,
+                    "1": 0.0
+                  },
+                  "valid_pixels": 31
+                },
+                "equator": {
+                  "miou": 0.9131944444444444,
+                  "per_class_iou": {
+                    "0": 0.8888888888888888,
+                    "1": 0.9375
+                  },
+                  "valid_pixels": 24
+                }
+              },
+              "per_class_iou_by_region_status": "implemented"
+            }
+          },
+          "directory_eval": {
+            "status": "ok",
+            "num_images": 5,
+            "regions": {
+              "overall": {
+                "mean_miou": 0.4534067288677467,
+                "valid_pixels": 3890963,
+                "num_images_with_metric": 5
+              },
+              "seam": {
+                "mean_miou": 0.3544152778088513,
+                "valid_pixels": 120273,
+                "num_images_with_metric": 5
+              },
+              "polar": {
+                "mean_miou": 0.4725170393563811,
+                "valid_pixels": 1195464,
+                "num_images_with_metric": 5
+              },
+              "equator": {
+                "mean_miou": 0.4595288045245593,
+                "valid_pixels": 2612118,
+                "num_images_with_metric": 5
+              }
+            },
+            "matched_masks": 5,
+            "failed_masks": []
+          },
+          "outputs": {
+            "json": "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run_region_metrics.json",
+            "md": "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/dry_run_region_metrics.md"
+          },
+          "per_class_iou_by_region_status": "implemented",
+          "training_run": false,
+          "model_changed": false,
+          "memory_selection_changed": false,
+          "loss_changed": false
+        }
+      },
+      "full_eval": {
+        "ids": [
+          "24",
+          "68",
+          "101",
+          "111",
+          "122",
+          "155",
+          "210",
+          "263",
+          "289",
+          "305",
+          "319",
+          "363"
+        ],
+        "command": [
+          "/root/miniconda3/envs/omnisam/bin/python",
+          "experiments/geo_memory/scripts/eval_region_metrics.py",
+          "--pred-dir",
+          "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/full_available/pred",
+          "--gt-dir",
+          "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/full_available/gt_densepass13",
+          "--ignore-index",
+          "255",
+          "--seam-width",
+          "32",
+          "--polar-band-ratio",
+          "0.15",
+          "--num-classes",
+          "13",
+          "--output-json",
+          "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/full_region_metrics.json",
+          "--output-md",
+          "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/full_region_metrics.md",
+          "--self-test"
+        ],
+        "returncode": 0,
+        "stdout_tail": "{\n  \"status\": \"ok\",\n  \"synthetic_self_test\": {\n    \"status\": \"passed\",\n    \"checks\": {\n      \"overall_miou\": true,\n      \"seam_miou\": true,\n      \"polar_miou\": true,\n      \"equator_miou\": true,\n      \"ignore_index_excluded\": true\n    },\n    \"expected\": {\n      \"overall_miou\": 0.9231678486997636,\n      \"seam_miou\": 1.0,\n      \"polar_miou\": 0.4838709677419355,\n      \"equator_miou\": 0.9131944444444444\n    },\n    \"actual\": {\n      \"overall_miou\": 0.9231678486997636,\n      \"seam_miou\": 1.0,\n      \"polar_miou\": 0.4838709677419355,\n      \"equator_miou\": 0.9131944444444444\n    },\n    \"metrics\": {\n      \"image_shape\": [\n        8,\n        8\n      ],\n      \"ignore_index\": 255,\n      \"region_definition\": \"experiments.geo_memory.geometry_ops.build_region_mask\",\n      \"regions\": {\n        \"overall\": {\n          \"miou\": 0.9231678486997636,\n          \"per_class_iou\": {\n            \"0\": 0.9574468085106383,\n            \"1\": 0.8888888888888888\n          },\n          \"valid_pixels\": 63\n        },\n        \"seam\": {\n          \"miou\": 1.0,\n          \"per_class_iou\": {\n            \"0\": 1.0,\n            \"1\": 1.0\n          },\n          \"valid_pixels\": 15\n        },\n        \"polar\": {\n          \"miou\": 0.4838709677419355,\n          \"per_class_iou\": {\n            \"0\": 0.967741935483871,\n            \"1\": 0.0\n          },\n          \"valid_pixels\": 31\n        },\n        \"equator\": {\n          \"miou\": 0.9131944444444444,\n          \"per_class_iou\": {\n            \"0\": 0.8888888888888888,\n            \"1\": 0.9375\n          },\n          \"valid_pixels\": 24\n        }\n      },\n      \"per_class_iou_by_region_status\": \"implemented\"\n    }\n  },\n  \"directory_eval\": {\n    \"status\": \"ok\",\n    \"num_images\": 12,\n    \"regions\": {\n      \"overall\": {\n        \"mean_miou\": 0.5149401748501377,\n        \"valid_pixels\": 9602750,\n        \"num_images_with_metric\": 12\n      },\n      \"seam\": {\n        \"mean_miou\": 0.45571344757766047,\n        \"valid_pixels\": 297482,\n        \"num_images_with_metric\": 12\n      },\n      \"polar\": {\n        \"mean_miou\": 0.5718643079652125,\n        \"valid_pixels\": 2899602,\n        \"num_images_with_metric\": 12\n      },\n      \"equator\": {\n        \"mean_miou\": 0.5235086730527009,\n        \"valid_pixels\": 6495091,\n        \"num_images_with_metric\": 12\n      }\n    },\n    \"matched_masks\": 12,\n    \"failed_masks\": []\n  },\n  \"outputs\": {\n    \"json\": \"experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/full_region_metrics.json\",\n    \"md\": \"experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/full_region_metrics.md\"\n  },\n  \"per_class_iou_by_region_status\": \"implemented\",\n  \"training_run\": false,\n  \"model_changed\": false,\n  \"memory_selection_changed\": false,\n  \"loss_changed\": false\n}\n",
+        "stderr_tail": "",
+        "output_json": "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/full_region_metrics.json",
+        "output_md": "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/full_region_metrics.md",
+        "parsed": {
+          "status": "ok",
+          "synthetic_self_test": {
+            "status": "passed",
+            "checks": {
+              "overall_miou": true,
+              "seam_miou": true,
+              "polar_miou": true,
+              "equator_miou": true,
+              "ignore_index_excluded": true
+            },
+            "expected": {
+              "overall_miou": 0.9231678486997636,
+              "seam_miou": 1.0,
+              "polar_miou": 0.4838709677419355,
+              "equator_miou": 0.9131944444444444
+            },
+            "actual": {
+              "overall_miou": 0.9231678486997636,
+              "seam_miou": 1.0,
+              "polar_miou": 0.4838709677419355,
+              "equator_miou": 0.9131944444444444
+            },
+            "metrics": {
+              "image_shape": [
+                8,
+                8
+              ],
+              "ignore_index": 255,
+              "region_definition": "experiments.geo_memory.geometry_ops.build_region_mask",
+              "regions": {
+                "overall": {
+                  "miou": 0.9231678486997636,
+                  "per_class_iou": {
+                    "0": 0.9574468085106383,
+                    "1": 0.8888888888888888
+                  },
+                  "valid_pixels": 63
+                },
+                "seam": {
+                  "miou": 1.0,
+                  "per_class_iou": {
+                    "0": 1.0,
+                    "1": 1.0
+                  },
+                  "valid_pixels": 15
+                },
+                "polar": {
+                  "miou": 0.4838709677419355,
+                  "per_class_iou": {
+                    "0": 0.967741935483871,
+                    "1": 0.0
+                  },
+                  "valid_pixels": 31
+                },
+                "equator": {
+                  "miou": 0.9131944444444444,
+                  "per_class_iou": {
+                    "0": 0.8888888888888888,
+                    "1": 0.9375
+                  },
+                  "valid_pixels": 24
+                }
+              },
+              "per_class_iou_by_region_status": "implemented"
+            }
+          },
+          "directory_eval": {
+            "status": "ok",
+            "num_images": 12,
+            "regions": {
+              "overall": {
+                "mean_miou": 0.5149401748501377,
+                "valid_pixels": 9602750,
+                "num_images_with_metric": 12
+              },
+              "seam": {
+                "mean_miou": 0.45571344757766047,
+                "valid_pixels": 297482,
+                "num_images_with_metric": 12
+              },
+              "polar": {
+                "mean_miou": 0.5718643079652125,
+                "valid_pixels": 2899602,
+                "num_images_with_metric": 12
+              },
+              "equator": {
+                "mean_miou": 0.5235086730527009,
+                "valid_pixels": 6495091,
+                "num_images_with_metric": 12
+              }
+            },
+            "matched_masks": 12,
+            "failed_masks": []
+          },
+          "outputs": {
+            "json": "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/full_region_metrics.json",
+            "md": "experiments/geo_memory/raw_results/GM1_A_Dtrain_Etrain/full_region_metrics.md"
+          },
+          "per_class_iou_by_region_status": "implemented",
+          "training_run": false,
+          "model_changed": false,
+          "memory_selection_changed": false,
+          "loss_changed": false
+        }
+      },
+      "polar_error_ratio": 0.14673255157087076,
+      "label_range_check": {
+        "prediction": {
+          "unique": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "min": 0,
+          "max": 12
+        },
+        "gt_raw_19class": {
+          "unique": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            255
+          ],
+          "min": 0,
+          "max": 255
+        },
+        "gt_mapped_13class": {
+          "unique": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            255
+          ],
+          "min": 0,
+          "max": 255
+        },
+        "valid_gt_pixels": 9602750,
+        "ignore_pixels": 227650,
+        "pred_out_of_range_on_valid_gt_pixels": 0,
+        "class_mapping": "DensePASS13 mapping from dataset/DensePASS.py: [0,1,2,3,4,5,6,7,8,9,10,11,11,12,12,12,255,12,12]; ignore_index=255; num_classes=13; valid GT follows validation.py fast_hist filter GT∈[0,13)."
+      }
+    }
+  }
+}

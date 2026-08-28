@@ -1,0 +1,170 @@
+\section{方法}
+\label{sec:method}
+
+\subsection{问题定义}
+本文研究全景语义分割中的无监督域适应问题。给定有标注源域数据
+\[
+\mathcal{D}_s = \{(x_s^i, y_s^i)\}_{i=1}^{N_s},
+\]
+以及无标注目标域全景数据
+\[
+\mathcal{D}_t = \{x_t^j\}_{j=1}^{N_t},
+\]
+目标是在不使用目标域人工标注的条件下，学习一个能够在目标域全景图像上进行像素级语义预测的模型。模型输入可以是完整全景图像，也可以是由全景图像切分得到的 patch 或 view；模型输出为每个像素或局部区域对应的语义类别分布。与普通源域到目标域迁移相比，本文设置中源域和目标域不仅存在外观风格和场景分布差异，还存在视角结构、投影几何、尺度变化和类别频率差异，因此目标域监督信号更依赖伪标签、自训练或一致性约束。
+
+在 OmniSAM 框架中，全景图像通常被表示为 patch/view sequence。每个 patch 或 view 经过视觉编码后形成视觉 token，memory mechanism 用于在当前视图与历史或相邻视图之间传播上下文信息，从而建模跨 patch、跨视场的语义关联。本文不重新定义全景 UDA 任务，也不从零设计新的全景语义分割模型，而是在 OmniSAM 适配训练中关注两个具体问题：其一，memory attention 中存在的 memory token 冗余会增加训练阶段计算开销；其二，目标域伪标签噪声会影响无监督适配信号的可靠性。前者构成本文 v1.0 的主要方法线索，后者作为辅助可靠性方向进行初步分析。
+
+整体训练目标可写为
+\[
+\min_{\theta}\ \mathcal{L}_{seg}(\mathcal{D}_s;\theta) + \lambda \mathcal{L}_{uda}(\mathcal{D}_t;\theta),
+\]
+其中，$\theta$ 表示模型参数，$\mathcal{L}_{seg}$ 表示源域监督分割损失，$\mathcal{L}_{uda}$ 表示目标域无监督适配损失，可包含伪标签监督、自训练项或一致性约束，$\lambda$ 用于平衡源域监督与目标域适配。本文后续模块主要作用于两个位置：Memory Token Compression (MTC) 与 Sparse Memory Retrieval (SMR) 作用于 memory attention 相关的 token 表示与检索过程，Pseudo-label Quality Refinement (PQR) 作用于目标域伪标签可靠性建模。
+
+\subsection{整体框架}
+本文方法建立在 OmniSAM baseline 之上，整体由三部分组成。第一部分是 OmniSAM 全景 UDA 适配流程。输入的全景图像或目标域图像首先被划分为 patch/view sequence，并送入 SAM/SAM2-style 视觉编码器得到多尺度特征和视觉 token；随后，memory mechanism 在序列内部建立当前视图与历史视图之间的上下文交互；最后，解码器输出语义分割预测。该流程提供了本文研究 memory token 高效化的基础，并保持与 OmniSAM 原有全景适配设置一致。
+
+第二部分是 memory-efficient module，包括 MTC 和 SMR。MTC 面向 memory token 的空间冗余，通过压缩或聚合减少进入后续 memory attention 的 token 数；SMR 面向 memory token 的信息冗余，通过 token saliency 或特征范数等准则选择更有价值的 token 参与检索。二者均作为 train-only memory-efficient module 插入 OmniSAM 训练链路，目标是在不改变任务定义和主体预测结构的前提下，降低训练阶段 memory attention 成本。当前论文 v1.0 的主贡献即围绕 MTC+SMR 展开，full protocol 主结果也对应这一 memory-efficient 配置。
+
+第三部分是 Pseudo-label Quality Refinement。PQR 用于分析目标域伪标签可靠性，可包含 class-balanced filtering、prototype-guided reliability modeling 等方向。由于当前实验显示 PQR 的收益有限，且尚不足以支撑强性能结论，本文在 v1.0 中将其定位为辅助模块和 preliminary ablation，而不是主贡献。相应地，本文区分不同实验口径：full protocol 主结果用于评估 MTC+SMR 的整体训练效率与分割性能；fixed-PL clean ablation/profile 主要用于分析 memory 模块的 token 数和 attention 开销；PQR 相关结果仅用于讨论伪标签可靠性建模的潜在价值与当前限制。
+
+\subsection{OmniSAM 基线适配流程}
+OmniSAM baseline 利用 SAM/SAM2-style encoder 的视觉表示能力，并通过 memory mechanism 将全景图像中的不同 patch 或 view 连接起来。对于一张全景图像，模型先按照预设窗口或视场顺序形成 patch/view sequence。每个 view 经过视觉编码器得到局部视觉 token 和多尺度特征，随后通过 memory bank 保存或读取历史视图中的记忆表示。memory attention 在当前 view token 与 memory token 之间建立交互，使当前预测能够利用前后视场中的上下文线索。
+
+在全景语义分割中，这种 memory-based 建模有助于缓解局部窗口独立预测造成的语义割裂。例如，道路、建筑、天空和车辆等类别往往跨越多个视场，当前 view 中的边界判断也可能依赖相邻 view 中的结构延续。通过 memory attention，OmniSAM 可以在 patch sequence 内传播语义上下文，从而提升跨视场语义一致性和边界连续性。在 UDA 训练中，源域样本提供监督分割信号，目标域样本则依赖伪标签或自训练信号构造无监督适配损失，memory mechanism 同时参与源域和目标域样本的上下文建模。
+
+然而，memory attention 的计算成本与参与交互的 token 数密切相关。当全景图像被划分为较长的 patch/view sequence，且 memory bank 保存较多历史表示时，当前 view 需要与大量 memory token 进行交互，训练阶段的显存占用和时间开销都会增加。更重要的是，这些 memory token 并非全部具有同等贡献：相邻空间区域可能包含重复纹理或背景信息，部分历史 token 对当前预测帮助有限，部分全景区域在多个 view 中呈现高度冗余。因此，OmniSAM baseline 在提供跨视场上下文的同时，也暴露出训练阶段 memory token redundancy。本文后续提出的 MTC 和 SMR 即针对这一问题，在保持 OmniSAM 主体流程不变的条件下，对 memory token 进行压缩与稀疏检索。
+
+
+\subsection{Memory Token Compression}
+Memory Token Compression (MTC) 面向 OmniSAM 训练阶段的 memory token 空间冗余。对于当前 patch/view 的 query token，memory attention 需要与历史或相邻视图中的 memory token 进行交互；当全景图像被表示为较长的 patch/view sequence 时，memory bank 中会累积大量局部相邻、语义重复或背景相似的 token。若直接保留全部 token，attention 计算会随 memory token 数增加而上升。MTC 的目标是在尽量保持语义通道表达不变的前提下，减少参与后续 memory attention 的 token 数，从而降低训练阶段上下文交互成本。
+
+在当前实现中，MTC 对应 \texttt{SpatialMemoryCompressor}。输入 memory token 采用 $(L,B,C)$ 形式，其中 $L$ 是 token 数，$B$ 是 batch 维度，$C$ 是通道维度；同时输入对应的位置编码 token 和空间尺寸 $(H_m,W_m)$。本文可将原始 memory 表示抽象为
+\[
+M = \{m_i\}_{i=1}^{N_m}, \quad m_i \in \mathbb{R}^{C},
+\]
+当保留空间结构时，也可写为
+\[
+M \in \mathbb{R}^{H_m \times W_m \times C}, \quad N_m = H_m W_m.
+\]
+MTC 输出压缩后的 memory token：
+\[
+\tilde{M} = \mathrm{MTC}(M), \quad \tilde{M} \in \mathbb{R}^{\tilde{N}_m \times C}, \quad \tilde{N}_m < N_m.
+\]
+这里 MTC 主要改变 token 数，不改变语义通道维度 $C$；压缩后的 memory token 与对应位置编码继续送入后续 memory attention 或 SMR。
+
+具体而言，当前代码首先将 $(L,B,C)$ token 根据空间尺寸恢复为 $(B,C,H_m,W_m)$ 的二维 memory map，然后根据配置执行非学习式空间压缩。实现中支持 \texttt{pool}、\texttt{spatial} 和 \texttt{hybrid} 等模式：\texttt{pool} 使用平均池化按给定 kernel size 和 stride 聚合局部邻域；\texttt{spatial} 可使用 adaptive average pooling 压缩到指定目标空间尺度，也可退化为普通池化；\texttt{hybrid} 在局部池化 token 外可额外保留少量 global tokens。位置编码在默认设置下同步进行相同空间压缩，以保持 token 与位置表示对齐。该过程可概括为
+\[
+\tilde{M} = \mathrm{Flatten}(\mathrm{Pool}(M; r)),
+\]
+其中 $r$ 表示由 kernel、stride 或目标空间尺度决定的压缩设置。实现中还包含最小 token 数阈值、未知模式回退和 NaN/Inf 检查，以避免在过小 memory map 或异常输入下产生不稳定输出。
+
+从复杂度角度看，若当前 view 的 query token 数为 $N_q$，原始 memory token 数为 $N_m$，则 dense memory attention 的主要交互规模可近似表示为
+\[
+\mathcal{O}(N_q N_m C).
+\]
+MTC 将 memory token 数从 $N_m$ 降到 $\tilde{N}_m$ 后，后续 attention 交互规模变为
+\[
+\mathcal{O}(N_q \tilde{N}_m C).
+\]
+因此，当 $\tilde{N}_m \ll N_m$ 时，memory attention 的计算和显存压力可以随 token 数减少而下降。需要强调的是，MTC 是训练阶段的 memory-efficient 插件，目标是降低 OmniSAM UDA 训练中的 memory attention 开销；它不改变全景语义分割任务定义，也不重新设计 OmniSAM 主干或解码器。
+
+\subsection{Sparse Memory Retrieval}
+Sparse Memory Retrieval (SMR) 进一步面向 memory token 的内容冗余。即使经过 MTC 的结构化压缩，memory bank 中仍可能存在对当前 query 帮助有限的 token；不同历史视图、不同空间区域和不同语义内容对当前全景预测的重要性并不相同。SMR 将 memory 读取过程抽象为一个轻量级稀疏检索算子，通过对 token 进行评分和选择，仅保留更有价值的 memory token 进入 memory attention。相比固定的均匀压缩，SMR 更强调内容自适应选择。
+
+在当前实现中，SMR 对应 \texttt{SparseMemoryRetriever}。其输入包括 memory token、位置编码 token、空间尺寸、可选的 memory id，以及可选的 attention scores、confidence map、overlap mask 和 boundary mask。给定 memory token
+\[
+M = \{m_i\}_{i=1}^{N_m}\quad \text{或}\quad \tilde{M}=\{\tilde{m}_i\}_{i=1}^{\tilde{N}_m},
+\]
+SMR 为每个 token 计算重要性分数
+\[
+s_i = g(m_i),
+\]
+并根据 keep ratio、min tokens 和可选 max tokens 得到选择数量 $K$，再选出 top-k token：
+\[
+\hat{M} = \{m_i \mid i \in \mathrm{TopK}(s,K)\}, \quad \hat{M} \in \mathbb{R}^{K \times C}, \quad K < N_m.
+\]
+若输入是 MTC 后的 $\tilde{M}$，则同理从 $\tilde{N}_m$ 个 token 中选择 $K$ 个 token。实现会同步选择对应的位置编码，并返回被选 token 的索引和统计信息。
+
+代码中提供多种评分模式。默认安全回退为 feature norm，即用 token 的特征范数衡量 saliency：
+\[
+s_i = \lVert m_i \rVert_2.
+\]
+实现中具体为对 $(L,B,C)$ token 在通道维度计算范数，并在 batch 维度求均值。除此之外，SMR 还支持 random、attn\_topk、confidence\_topk 和 hybrid 等模式；当 attention score 或 confidence map 的形状与 token 数不匹配时，会回退到 feature norm，以保证检索过程可运行。实现中还包含 memory id 级别的索引缓存，用于在允许缓存时复用已选 token 索引；若选择为空或选中 token 出现 NaN，则回退为原始 memory token。这些保护路径使 SMR 在不同训练配置下保持保守稳定。
+
+MTC 与 SMR 的作用互补。MTC 偏向结构化压缩，主要减少局部空间邻域中的冗余 token；SMR 偏向内容自适应选择，主要保留评分更高、对当前预测更可能有用的 token。二者可以单独使用，也可以组合使用。组合时，memory token 先经过 MTC 降低空间冗余，再经过 SMR 选择更重要的 token：
+\[
+\hat{M} = \mathrm{SMR}(\mathrm{MTC}(M)).
+\]
+当前 full protocol 主结果采用 MTC+SMR 的 memory-efficient 配置；fixed-PL clean ablation/profile 则用于分别分析 MTC、SMR 及其组合对 token 数和 memory attention 开销的影响。这里仅说明模块关系，具体指标和消融结果在实验章节报告。
+
+从复杂度角度看，SMR 后实际进入 memory attention 的 token 数为 $K$，因此 attention 交互规模可近似写为
+\[
+\mathcal{O}(N_q K C).
+\]
+当 $K \ll N_m$ 或 $K \ll \tilde{N}_m$ 时，SMR 可以降低 memory attention 的计算量和显存压力。评分与 top-k 选择本身也有额外成本，但相对于 dense memory attention 通常较轻，且当前实现支持缓存和安全回退。需要注意的是，SMR 并不是直接删除某些语义类别，而是在 memory token 层面减少冗余上下文。保留高 saliency token 有助于维持主要语义信息，但过强稀疏化可能影响小目标、边界区域或低响应类别，因此需要通过 token budget ablation 选择合适比例。本文在方法上将 SMR 作为 train-only memory-efficient module，而不声称其保证尽量保留主要语义信息。
+
+
+\subsection{Pseudo-label Quality Refinement}
+Pseudo-label Quality Refinement (PQR) 用于描述本文对目标域伪标签可靠性的辅助建模。无监督域适应语义分割中，目标域没有人工标注，训练通常依赖模型预测生成伪标签。低置信预测、类别不均衡、边界模糊以及源域到目标域的外观和投影偏移，都会使伪标签包含噪声；若这些错误监督在自训练中反复累积，可能影响目标域适配稳定性。因此，PQR 的目标不是替代 MTC/SMR 主线，而是对目标域伪标签进行质量筛选，分析可靠监督信号对 OmniSAM 适配的影响。
+
+给定目标域图像 $x_t$，模型输出类别概率
+\[
+p_t = f_{\theta}(x_t),
+\]
+基础伪标签和置信度可写为
+\[
+\hat{y}_t = \arg\max_c p_t(c), \quad q_t = \max_c p_t(c).
+\]
+当前代码中的 confidence-based filtering 对应 \texttt{masked\_unsup\_ce}，其输入包括预测 logits、pseudo label、confidence map、可选 base mask 和阈值；输出为经过 mask 后的无监督交叉熵及 valid ratio、filtered ratio 等统计量。基础置信过滤可表示为
+\[
+\mathcal{M}_t = \mathbb{I}(q_t \geq \tau),
+\]
+其中 $\tau$ 是置信阈值。实现中阈值既可以是标量，也可以是与 confidence map 对齐的张量；当有效像素过少时，代码提供 skip、original 或 zero 等 fallback，以避免训练过程因空 mask 不稳定。
+
+单一置信阈值容易偏向 easy classes，并可能削弱稀有类别的监督覆盖。PQR 因此将 class-balanced 或 class-adaptive filtering 抽象为类别相关的阈值或保留策略。对于像素或 token 位置 $u$，若其伪标签类别为 $\hat{y}_t(u)$，可写为
+\[
+\mathcal{M}_t(u) = \mathbb{I}\big(q_t(u) \geq \tau_{\hat{y}_t(u)}\big).
+\]
+从当前实现看，prototype gate 工具中包含按 common、rare 和 extreme-rare 类别组的 class-wise percentile keep mask，可用于以更保守的方式调节不同类别的过滤强度。本文仅将其作为伪标签可靠性建模的辅助策略，而不声称其已经形成最终性能来源。
+
+Prototype-guided filtering 进一步利用特征与类别原型的一致性评估伪标签可靠性。当前 \texttt{prototype\_gate.py} 提供 current-batch prototype similarity 工具：先将伪标签和 valid mask 下采样到特征分辨率，再基于有效位置计算当前 batch 的类别 prototype，并计算每个位置特征与其预测类别 prototype 的余弦相似度。该过程可抽象为
+\[
+r_t(u) = \mathrm{sim}\big(z_t(u), p_{\hat{y}_t(u)}\big),
+\]
+其中 $z_t(u)$ 是目标域特征，$p_{\hat{y}_t(u)}$ 是对应类别 prototype。相似度门控可写为
+\[
+\mathcal{G}_t(u) = \mathbb{I}\big(r_t(u) \geq \gamma_{\hat{y}_t(u)}\big), \quad
+\mathcal{M}^{pqr}_t = \mathcal{M}_t \cap \mathcal{G}_t.
+\]
+需要注意的是，\texttt{prototype\_bank.py} 当前仍是 placeholder，未提供持久化 prototype bank；因此本文只将 prototype-guided 方向描述为当前 batch 级可靠性分析工具。R6 memory-aware PLQ 配置也明确标注为 \texttt{NOT\_IMPLEMENTED\_YET}，不能写成已完成方法。综上，在本文当前版本中，PQR 是 optional auxiliary branch，主要用于分析目标域监督信号可靠性，而非最终性能提升的主要来源。
+
+\subsection{训练目标与实现说明}
+基于前文问题定义，本文采用简洁的源域监督与目标域适配联合目标：
+\[
+\mathcal{L}
+=
+\mathcal{L}_{src}
++
+\lambda_t \mathcal{L}_{tgt},
+\]
+其中 $\mathcal{L}_{src}$ 是源域监督分割损失，$\mathcal{L}_{tgt}$ 是目标域伪标签监督或无监督适配损失，$\lambda_t$ 为目标域损失权重。源域部分可写为
+\[
+\mathcal{L}_{src}
+=
+\mathrm{CE}\big(f_{\theta}(x_s), y_s\big).
+\]
+对于目标域样本，若使用 PQR mask，则伪标签监督项可抽象为
+\[
+\mathcal{L}_{tgt}
+=
+\frac{1}{|\mathcal{M}^{pqr}_t|}
+\sum_{u \in \mathcal{M}^{pqr}_t}
+\mathrm{CE}\big(f_{\theta}(x_t)_u, \hat{y}_t(u)\big).
+\]
+当 PQR 未启用时，$\mathcal{M}^{pqr}_t$ 可退化为 identity mask、基础 confidence mask 或已有伪标签有效区域。上述公式只描述本文方法所需的主要监督形式，不引入额外未验证的复杂损失。
+
+MTC 和 SMR 的插入位置与损失定义相互独立。二者作用于进入 memory attention 前的 memory token：MTC 改变 memory token 的空间密度，SMR 改变实际参与检索的 token 子集；它们不改变源域监督损失或目标域伪标签损失的数学形式，而是改变 memory attention 的输入规模和训练阶段计算路径。因此，MTC/SMR 可以作为 train-only memory-efficient module 接入 OmniSAM 训练 pipeline，用于降低训练阶段 memory attention 开销，同时保持全景语义分割任务定义和解码输出不变。
+
+本文当前关注训练阶段效率，因而需要区分不同实验口径。Full protocol 主结果用于评估 MTC+SMR 作为主要方法时的整体训练成本和分割表现；fixed-PL clean ablation/profile 用于分析不同 memory token 策略对 token 数和 memory attention 开销的影响；PQR 相关实验则用于辅助讨论伪标签可靠性，不与 memory-efficient 主线混写成强结论。上述口径在实验章节中应分别报告，避免将不同设置下的时间、token 数或伪标签结果混用。
+
+从实现边界看，MTC 对应 \texttt{SpatialMemoryCompressor}，SMR 对应 \texttt{SparseMemoryRetriever}，PQR 相关实现包括 confidence mask、class-wise filtering utilities 和 current-batch prototype-guided filtering。MTC、SMR 和 PQR 均可作为可插拔模块单独打开或组合使用，但本文 v1.0 将 MTC+SMR 作为主要方法，PQR 仅作为可选辅助分支。Memory-aware PQR 或 R6 \texttt{memory\_plq} 仍属于待实现扩展，不纳入当前已完成方法。当前实验范围主要围绕 Cityscapes $\rightarrow$ DensePASS、sam2\_s、13 类协议和 single seed 设置展开；更多数据集、多 seed、indoor 场景和 memory-aware pseudo-label quality 建模将作为后续补充。

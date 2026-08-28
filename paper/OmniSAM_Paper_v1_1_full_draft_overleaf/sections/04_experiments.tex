@@ -1,0 +1,47 @@
+\section{实验}
+\label{sec:experiments}
+
+\subsection{实验设置}
+本文实验围绕 OmniSAM 全景语义分割无监督域适应设置展开，当前 v1.0 主要基于本地可确认 checkpoint、伪标签产物和可复现实验记录进行整理。主实验采用 Cityscapes $\rightarrow$ DensePASS 协议：Cityscapes 作为有标签源域，DensePASS 作为无标签目标域及目标域验证数据，用于评估从透视街景到全景街景的适配效果。模型设置采用 OmniSAM / sam2\_s / 13 类语义分割协议，与当前本地 checkpoint、伪标签目录和主实验配置保持一致。
+
+本文当前主结果为 single seed 初步结果，主要用于验证 memory-efficient training 在 OmniSAM 全景 UDA 中的可行性，即在基本保持分割精度和边界质量的同时降低训练阶段 memory attention 开销。需要强调的是，本文 v1.0 不将跨数据集验证或随机种子稳定性作为已完成结论。WildPASS、SynPASS、Stanford360 / Stanford2D3D、Matterport3D 等数据集可作为后续扩展方向，但由于 checkpoint、协议或定量结果尚未完全审计，当前不进入正式主结果强结论。
+
+\subsection{数据集与任务协议}
+Cityscapes 是常用的城市道路场景语义分割数据集。在本文中，Cityscapes 用作源域有标签数据，提供像素级监督分割信号。DensePASS 是面向全景街景语义理解的目标域数据，在本文中用于无标签目标域适配和目标域验证。Cityscapes $\rightarrow$ DensePASS 因此构成本文 v1.0 的核心任务协议，用于考察 OmniSAM 在从普通透视街景到 $360^\circ$ 全景街景时的无监督域适应能力。
+
+类别协议方面，本文采用 13 类语义分割协议。该设置与当前本地可确认的 Cityscapes\_13cls / sam2\_s checkpoint、DensePASS 验证记录以及 memory-efficient 相关实验目录保持一致。为避免引入未经审计的信息，本文不在实验设置中额外展开具体类别列表，而在结果报告中统一使用 13 类协议下的指标。
+
+除 Cityscapes 和 DensePASS 外，仓库中还包含 WildPASS、SynPASS、Stanford360 / Stanford2D3D 等扩展数据协议或部分评估记录。这些数据集对于检验室外/室内场景、不同全景协议和跨源域适配具有潜在价值，但当前 v1.0 缺少统一确认的完整 checkpoint、训练协议或可复核主表口径。因此，本文仅将它们作为后续实验和补充验证方向，不声称其定量泛化实验已经完成。
+
+\subsection{评价指标}
+本文以 mIoU 为主要分割精度指标。mIoU 即 mean Intersection-over-Union，用于衡量各语义类别预测区域与真实标注区域之间的平均重叠程度，能够较好反映类别级语义分割性能。除 mIoU 外，实验记录中还包含 mAcc、PixAcc、FWIoU 和 mDice 等辅助指标，分别从类别平均准确率、像素级准确率、频率加权重叠度和 Dice 相似度等角度补充分割性能观察。
+
+考虑到全景语义分割对边界连续性和跨视场一致性较为敏感，本文同时关注 BFScore，即 Boundary F-score。该指标用于衡量预测边界与标注边界之间的一致性，对 ERP 投影边界、局部窗口拼接边界以及跨视场语义结构具有补充意义。当前 full protocol 下的 BFScore 来自原始验证日志中标记为 \texttt{[ValSummary]} 的记录，而不是 \texttt{metrics.jsonl}，因此在表格和正文说明中需要单独标注其来源。
+
+效率指标用于评估 memory-efficient training 的实际作用。本文关注总训练耗时、单 iter 耗时、memory attention time 和 memory token 数量。其中，full DensePASS protocol 主结果主要报告总训练耗时和单 iter 耗时，用于衡量完整训练流程下的总体效率；fixed-PL clean ablation/profile 则主要用于分析 memory attention time 和 token budget，考察 MTC 与 SMR 对 memory token 交互规模的影响。上述两类时间口径不同，不能混用或直接互相替代。
+
+\subsection{实现细节}
+本文实验基于 OmniSAM\_s / sam2\_s 设置，并使用本地可确认 checkpoint 和对应伪标签产物进行适配实验整理。本文不从零训练新的 OmniSAM 大模型，而是在已有 OmniSAM 全景 UDA pipeline 上插入 memory-efficient 模块进行训练阶段高效化分析。MTC 对应 \texttt{SpatialMemoryCompressor}，SMR 对应 \texttt{SparseMemoryRetriever}；二者作为 train-only memory-efficient modules 作用于进入 memory attention 前的 memory token，改变 token 数量和 attention 输入规模，但不改变源域监督损失、目标域伪标签损失和语义分割输出定义。
+
+PQR 相关实验仅作为 preliminary ablation 和辅助可靠性分析。其作用是观察 confidence mask、class-balanced filtering 和 prototype-guided filtering 等伪标签可靠性策略对目标域监督信号的影响，当前主结果不依赖 PQR 得出强结论。为避免不同实验口径混用，本文在结果报告中分别标注 full protocol、fixed-PL clean ablation/profile 和 PQR preliminary ablation：前者用于主结果对比，中者用于 memory token 与 attention 开销分析，后者用于伪标签可靠性探索。
+
+当前实现细节仅报告已经审计且与论文主线直接相关的设置。硬件参数、batch size、learning rate、更多 epoch 设置以及未统一审计的数据集实验不在本小节中展开；若后续补充新的数据集或多 seed 实验，将在对应实验设置中单独说明。
+
+
+\subsection{主结果}
+\input{tables/main_results}
+
+表~\ref{tab:main_results} 给出了 Cityscapes $\rightarrow$ DensePASS full protocol、OmniSAM / sam2\_s / 13 类协议、single seed 设置下的主结果。该表比较 OmniSAM baseline 与本文的 MTC+SMR 配置，重点关注语义分割精度、边界质量和训练成本之间的权衡。需要说明的是，本节主结果仅对应 full DensePASS protocol，不混入 fixed-PL clean ablation/profile 或 PQR preliminary ablation 的结果。
+
+从表中可以看到，MTC+SMR 在 mIoU 上由 60.26 变为 60.16，仅下降 0.10；BFScore 由 39.97 变为 39.86，仅下降 0.11。mIoU 反映整体类别级语义分割性能，而 BFScore 反映预测边界与标注边界之间的一致性。对于全景语义分割，边界质量尤其重要，因为 ERP 投影、滑窗处理和跨视场结构都可能影响边界连续性。当前 full protocol 的 BFScore 来自原始验证日志中的 \texttt{[ValSummary]} 记录，而不是 \texttt{metrics.jsonl}，因此本文在表格说明中单独标注其来源。
+
+上述结果表明，在当前 single-seed 设置下，减少冗余 memory token 并未明显破坏全景分割精度与边界质量。MTC+SMR 并不追求提升 mIoU，而是在基本保持 mIoU 和 BFScore 的同时降低训练成本。换言之，OmniSAM 的 memory mechanism 中存在一定压缩空间，训练阶段不必保留全部 memory token 才能维持主要语义信息和边界质量。这一观察为后续 memory-efficient training 提供了主结果层面的支持。
+
+\subsection{效率分析}
+\input{tables/efficiency_analysis}
+
+表~\ref{tab:efficiency_analysis} 进一步汇总 full protocol 下的效率结果。与 OmniSAM baseline 相比，MTC+SMR 将总训练耗时由 43m53s 降至 34m03s，单 iter 耗时由 5.27s 降至 4.09s，二者均约下降 22.4\%。该结果与本文方法设计一致：MTC 通过空间压缩减少冗余 memory token，SMR 通过稀疏选择减少进入 memory attention 的 token 数，从而降低训练阶段的 attention 交互规模。
+
+在单卡训练资源受限的场景下，训练耗时和单 iter 耗时直接影响全景 UDA 实验的可复现性和消融成本。MTC+SMR 以较小的 mIoU 和 BFScore 下降换取约 22.4\% 的训练时间下降，说明 memory-efficient training 能够提供可观的训练效率收益。需要强调的是，本文此处讨论的是训练阶段效率，而不讨论部署端推理速度，也不额外推断未在表格中报告的显存收益。
+
+本节只报告 full protocol 下的主结果和训练耗时。后续消融实验中的 fixed-PL clean ablation/profile 将用于单独分析 memory token 数量、memory attention time 与 token budget，PQR preliminary ablation 也将作为伪标签可靠性探索单独说明。不同口径下的 BFScore、memory attention time、step time 和伪标签设置不能直接混合比较，否则容易将 full protocol 的端到端训练结果与 clean ablation/profile 的局部分析混为一谈。

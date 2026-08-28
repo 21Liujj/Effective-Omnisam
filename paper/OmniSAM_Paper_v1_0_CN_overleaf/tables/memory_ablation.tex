@@ -1,0 +1,17 @@
+\begin{table}[t]
+  \centering
+  \caption{Fixed-PL clean ablation / profile setting. This table is not the full DensePASS protocol main result; it reports clean ablation profiling with reused pseudo labels.}
+  \label{tab:memory_ablation}
+  \begin{tabular}{lrrrr}
+    \toprule
+    配置 & Tokens & mIoU & BFScore & Memory attention time (s) \\
+    \midrule
+    baseline\_omnisam & 32768 & 60.26 & 39.59 & 117.48 \\
+    A\_ccpm & 32768 & 60.26 & 39.59 & 117.56 \\
+    A\_Dtrain & 8192 & 60.12 & 39.23 & 61.00 \\
+    A\_Etrain & 16384 & 60.09 & 39.23 & 79.69 \\
+    Dtrain\_Etrain & 4096 & 60.02 & 39.23 & 52.38 \\
+    A\_Dtrain\_Etrain & 4096 & 60.02 & 39.23 & 51.92 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

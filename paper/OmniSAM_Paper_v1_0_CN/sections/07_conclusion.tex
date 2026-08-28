@@ -1,0 +1,8 @@
+\section{结论}
+\label{sec:conclusion}
+
+本文针对 OmniSAM 全景 UDA 训练中的 memory token redundancy，提出 MTC 与 SMR：前者恢复记忆的空间结构并聚合相邻冗余，后者依据重要性稀疏选择历史 token。二者串联缩小 memory attention 的输入规模，同时保持视觉主干、分割任务和训练损失定义不变，从而将优化重点限定在训练阶段的记忆计算路径。
+
+在 Cityscapes $\rightarrow$ DensePASS、sam2\_s、13 类 single-seed 实验中，mIoU 由 60.26 变为 60.16，BFScore 由 39.97 变为 39.86；总训练耗时由 43m53s 降至 34m03s，单 iter 时间由 5.2655s 降至 4.0848s，时间下降约 22.4\%。结果说明，该方法以轻微分割质量代价换取明确的训练效率收益。模块消融和 token budget 分析进一步将该收益与 memory token 数及 attention 开销联系起来，定性结果则显示主要场景结构没有出现整体崩塌。
+
+现有证据仍限于单一目标数据集和随机种子，尚不能支持跨数据集稳定性、推理加速或显存收益结论；PQR 也仅提供辅助探索。未来将补充多随机种子、额外全景数据集及边界和小目标分析，并研究更可靠的跨视场监督信号。

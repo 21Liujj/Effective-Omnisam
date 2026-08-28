@@ -1,0 +1,50 @@
+# experiments/pl_refiner/configs/R5_rbpc.yaml
+# R5 rbpc: Region-Based Pseudo-label Correction on top of R4 (proto_gate).
+# Corrects isolated noisy predictions using superpixel/region agreement.
+#
+# experiment_id      : R5_rbpc
+# refiner_mode       : rbpc
+# use_class_balance  : true
+# use_plq            : true
+# use_prototype      : true
+# use_correction     : true
+# use_memory_consistency: false
+# memory_config      : none
+# full_train_allowed : conditional (depends on R4 stability)
+# status             : NOT_IMPLEMENTED_YET — requires adaptation/pseudo_label/correction.py
+
+pseudo_label_refiner:
+  mode: "rbpc"
+  enable: true
+  class_balance:
+    top_ratio: 0.67
+    min_pixels_per_class: 10
+    num_classes: 13
+  plq:
+    use_entropy: true
+    use_local_agreement: true
+    local_kernel_size: 3
+    weight_power: 1.0
+  prototype:
+    feat_key: "feat_t_de"
+    distance_metric: "cosine"
+    gate_threshold: 0.5
+    ema_momentum: 0.99
+    num_classes: 13
+  correction:
+    method: "region_vote"   # majority vote within connected regions
+    min_region_size: 50     # pixels; smaller regions get label from neighbours
+    correction_conf_thr: 0.9  # only correct when corrected label has high conf
+    max_correction_ratio: 0.05  # cap on how many pixels can be corrected/iter
+
+plugins:
+  pseudo_conf_mask:
+    enabled: true
+    threshold: 0.85
+  efficient_tam_memory:
+    enabled: false
+  efficient_sam2_sparse:
+    enabled: false
+
+reuse_pl_dir: data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+train_max_iters: 5

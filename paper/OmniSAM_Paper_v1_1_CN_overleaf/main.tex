@@ -1,0 +1,53 @@
+% !TeX program = xelatex
+% OmniSAM 中文论文 v1.0 LaTeX 母版
+\documentclass[UTF8,a4paper,11pt]{ctexart}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black,
+  pdftitle={面向全景语义分割无监督域适应的记忆高效 OmniSAM 改进方法},
+  pdfauthor={作者姓名}
+}
+
+\setlist[itemize]{leftmargin=2em}
+\setlist[enumerate]{leftmargin=2em}
+\newcommand{\method}{OmniSAM}
+\newcommand{\papertodo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{面向全景语义分割无监督域适应的记忆高效 OmniSAM 改进方法}
+\author{作者姓名}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\input{sections/00_abstract}
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_method}
+\input{sections/04_experiments}
+\input{sections/05_ablation}
+\input{sections/06_discussion}
+\input{sections/07_conclusion}
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}

@@ -1,0 +1,56 @@
+# ---- dataset / raw data (do not commit) ----
+data/
+Data/
+datasets/
+Datasets/
+dataset_data/
+
+# common dataset names (if present at repo root)
+Cityscapes/
+cityscapes/
+DensePASS/
+densepass/
+WildPASS/
+wildpass/
+SynPASS/
+synpass/
+
+# common dataset subfolders (if a dataset root is accidentally copied in)
+leftImg8bit/
+gtFine/
+annotations/
+images/
+labels/
+
+# ---- training outputs / pseudo-labels (not required for rerun) ----
+pd_*/
+pseudo*/
+runs*/
+outputs*/
+checkpoints*/
+
+# ---- caches / runtime ----
+__pycache__/
+*.py[cod]
+.pytest_cache/
+wandb/
+logs/
+demo_compare/
+
+
+
+# ---- pregenerated / auxiliary data outputs (regeneratable, not code) ----
+aux_outputs/
+data_extra/
+
+# ---- archived experiment result bundles ----
+*.tar.gz
+
+# ---- stray run logs at any location (not under logs/<EXPERIMENT_NAME>/) ----
+*.log
+*.pid
+
+# ---- ad-hoc manual backup copies (use git history instead) ----
+*.bak
+*.bak_*
+*.backup_*

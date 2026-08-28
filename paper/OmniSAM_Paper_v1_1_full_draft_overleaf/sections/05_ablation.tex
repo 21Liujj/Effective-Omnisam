@@ -1,0 +1,43 @@
+\section{消融实验}
+\label{sec:ablation}
+
+\subsection{Memory-efficient 模块消融}
+\input{tables/memory_ablation}
+
+表~\ref{tab:memory_ablation} 给出了 fixed-PL clean ablation/profile 口径下的 memory-efficient 模块消融。该实验复用固定伪标签，目的在于分析 MTC 与 SMR 对 memory token 数量和 memory attention time 的影响，而不是替代第~\ref{sec:experiments} 节中的 full protocol 主结果。因此，本小节中的 BFScore、step/profile 时间和 memory attention time 不应与 full DensePASS protocol 主表直接混用。表中使用相同的 DensePASS 验证协议观察不同 memory 配置的相对变化，重点是解释 token reduction 与 attention cost 之间的机制关系。
+
+首先比较 baseline\_omnisam 与 A\_ccpm。两者的 memory token 数均为 32768，mIoU 均为 60.26，BFScore 均为 39.59；memory attention time 分别为 117.48s 和 117.56s，基本没有下降。这说明 A\_ccpm 这类不直接减少 memory token 的组件，并不能从 memory attention 层面带来计算成本下降。换言之，如果 memory attention 的输入 token 规模保持不变，即使伪标签过滤或置信控制发生变化，也不应期待 memory attention time 本身出现明显下降。因此，本节后续分析主要关注真正改变 memory token 数量或检索规模的 MTC 与 SMR。
+
+单独引入 MTC 或 SMR 后，memory attention time 出现明显下降。A\_Dtrain 将 token 数从 32768 降至 8192，memory attention time 从 baseline 的 117.48s 降至 61.00s；A\_Etrain 将 token 数降至 16384，memory attention time 降至 79.69s。二者均显示，减少进入 memory attention 的 token 数可以直接降低模块级 attention 成本。其中，MTC 更偏向通过空间池化压缩局部冗余，SMR 更偏向通过稀疏选择保留评分较高的 token；二者对应不同的 token reduction 方式，但在 attention time 上都体现出降低交互规模的效果。与此同时，A\_Dtrain 的 mIoU 为 60.12、BFScore 为 39.23，A\_Etrain 的 mIoU 为 60.09、BFScore 为 39.23，相比 baseline 存在小幅下降，说明 token reduction 虽然有效降低计算，但也可能损失部分细粒度语义或边界信息。
+
+组合配置进一步压缩 memory token。Dtrain\_Etrain 与 A\_Dtrain\_Etrain 均将 token 数降至 4096，其中 A\_Dtrain\_Etrain 的 memory attention time 为 51.92s，相比 baseline\_omnisam 的 117.48s 明显降低；其 mIoU 为 60.02，BFScore 为 39.23。该结果表明，全景 memory token 中存在较明显的可压缩冗余，MTC/SMR 通过减少进入 memory attention 的 token 数，可以有效降低训练阶段 memory attention 开销。但需要注意，组合配置并不是无代价压缩：mIoU 和 BFScore 均较 baseline 有轻微下降，尤其 BFScore 的下降提示边界附近的细粒度上下文可能对 token 数更敏感。换言之，MTC 与 SMR 的作用更适合被理解为训练阶段的效率调节机制，而不是精度增强模块。它们通过牺牲少量冗余上下文换取更低的 attention 成本，为后续选择不同 token budget 提供依据。因此，memory-efficient 模块的意义不在于证明所有 memory token 都冗余，而在于提供一个可控的效率-精度折中路径。
+
+\subsection{Token budget 分析}
+\input{tables/token_budget_tradeoff}
+
+表~\ref{tab:token_budget_tradeoff} 进一步分析 token budget 与精度、边界质量和效率之间的关系。需要特别说明的是，表中的 100\%、75\%、50\% 和 25\% 四行构成 E-only token budget curve，用于观察 SMR keep ratio 变化时的趋势；final 12.5\% / 4096 tokens 是 D+E combined endpoint，并不是 E-only 曲线的自然延伸。因此，本表用于分析 memory token budget trade-off，仍属于 fixed-PL clean ablation/profile 口径，不应与 full protocol 主结果混用。
+
+从 token ratio 趋势看，随着 token budget 从 100\% 降至 25\%，memory attention time 从 117.56s 下降到 60.54s，说明减少 memory token 对 attention 计算具有直接影响。75\%、50\% 和 25\% 对应的 memory attention time 分别为 98.62s、79.69s 和 60.54s，整体随 token budget 降低而下降。在这一范围内，mIoU 从 60.26 变化到 60.12、60.09 和 60.10 附近，BFScore 从 39.59 下降到 39.28、39.23 和 39.29。整体来看，较大比例的 memory token 可以被压缩或稀疏选择，而不会造成语义分割性能的剧烈崩塌；但 BFScore 的下降也提示，边界质量对 token budget 更敏感，尤其需要关注小目标和边界区域的上下文保留。
+
+同时，step time 并不严格随 token ratio 单调下降。例如，75\% token ratio 的 step time 为 2.4614s，高于 100\% 的 2.4089s；而 50\% 和 25\% 分别为 2.3798s 和 2.2941s。这种非单调现象可能与 top-k / selection overhead、实现开销、I/O 或 profiling 波动有关。由于 step time 包含数据加载、前后向计算、稀疏选择和其他训练开销，它不一定只反映 memory attention 本身的变化。因此，本文在模块级效率分析中主要将 memory attention time 和 memory token 数作为更直接的指标，而不强行声称 total step time 会随 token budget 严格单调下降。
+
+final 12.5\% / 4096 tokens 对应 D+E combined endpoint。该配置进一步将 memory attention time 降至 51.92s，mIoU 为 60.02，BFScore 为 39.23。与 E-only curve 相比，它体现了结构化压缩和稀疏检索组合后的更低 token budget，但同时也对应更明显的边界质量下降。该点不能解释为 E-only keep ratio 曲线继续下降到 12.5\% 的自然结果，而应理解为 MTC 与 SMR 组合后的端点配置。它说明极低 token budget 仍具有一定可用性，但实际选择应取决于任务对训练效率、mIoU 和 BFScore 的权衡需求。
+
+总体而言，token budget 分析支持本文的核心假设：OmniSAM memory attention 中存在可压缩冗余，合理减少 memory token 能降低训练阶段 attention 开销；但过强压缩会逐步影响边界质量和细粒度语义。因此，token-efficient training 不是单纯追求最小 token 数，而是需要在效率、mIoU 和 BFScore 之间选择合适平衡点。对于资源受限的训练场景，可以选择更激进的 token budget；对于边界质量要求更高的设置，则应保留更多 memory token 或采用更温和的检索比例。该分析也解释了为什么本文在主方法中采用 MTC+SMR 组合，而不是仅报告某一个 token ratio 点：不同 token budget 反映了从保守压缩到激进压缩的连续权衡，最终配置需要结合训练成本、语义精度和边界质量共同判断。
+
+
+\subsection{伪标签质量优化消融}
+\input{tables/pseudo_label_ablation}
+
+表~\ref{tab:pseudo_label_ablation} 给出了 Pseudo-label Quality Refinement (PQR) 的 preliminary ablation。该实验用于分析目标域伪标签可靠性建模的潜在价值与限制，而不是作为本文 memory-efficient 主线的主要证据。实验采用 reused/fixed pseudo-label 设置，因此不应与 full protocol 主结果直接比较，也不应将 PQR 与 MTC+SMR 合并解释为一个统一的强性能提升方法。
+
+R0\_identity 作为伪标签优化的 identity baseline，不额外引入 class-balanced filtering 或 prototype-guided gate，mIoU 为 60.02。该结果用于衡量不使用额外 PQR 策略时的基础表现，并为后续过滤策略提供同一 reused/fixed pseudo-label 口径下的参照。由于该口径不同于 full protocol 主结果，本文不将 R0 与主结果表中的 baseline 直接比较。R2\_class\_balanced 引入 class-balanced / class-adaptive filtering 后，mIoU 为 60.07，相比 R0\_identity 仅提升 0.05。该变化可以被描述为轻微改善，说明类别自适应伪标签过滤可能有助于缓解 easy-class bias 或改善目标域监督信号分布，但当前幅度较小，证据仍然有限。
+
+R2R4\_proto\_gate 在 R2 的基础上进一步加入 prototype-guided gate，mIoU 为 60.05，相比 R2\_class\_balanced 略低。因此，当前结果不能支持将 prototype gate 作为最终性能收益来源的结论。一个可能解释是 current-batch prototype 的稳定性有限，目标域特征分布仍受域偏移影响；也可能是进一步过滤减少了有效监督像素，或者类别不均衡导致少数类 prototype 估计不够稳定。这些解释仅作为可能原因，而不是已被充分验证的结论。整体来看，PQR preliminary ablation 表明 class-balanced filtering 对目标域伪标签质量可能具有轻微正向作用，但 prototype-guided gate 在当前实现和实验设置下未带来进一步收益。因此，本文 v1.0 将 PQR 定位为辅助可靠性分析，而非最终性能提升的主要来源；R6\_memory\_plq 仍未纳入当前已完成实验。
+
+\subsection{消融实验小结}
+综合上述消融结果，memory-efficient 模块仍是本文最主要的实验证据。Memory ablation 显示，MTC 和 SMR 通过减少进入 memory attention 的 token 数，可以明显降低 memory attention time；fixed-PL clean ablation/profile 结果支持 OmniSAM 全景 memory token 中存在可压缩冗余。这一证据与 full protocol 主结果形成互补：主结果说明训练耗时可以下降，消融结果进一步解释这种效率收益来自 memory token 规模和 attention 交互成本的减少。但同时，mIoU 和 BFScore 的轻微下降说明 memory token 约简并非没有代价，尤其在边界质量和细粒度语义保留方面需要权衡。因此，MTC/SMR 更适合被理解为训练阶段效率优化机制，而不是单纯的精度增强模块。
+
+Token budget 分析进一步说明，memory attention time 会随 token budget 降低而整体下降，但 step time 不完全单调，因此不能只根据单步总时间判断模块效率。final 12.5\% / 4096 tokens 是 D+E combined endpoint，而不是 E-only 曲线的自然延伸；它展示了更激进 token reduction 的可用性，也提示极低 token budget 可能带来边界质量下降。由此可见，token-efficient training 的关键不是盲目追求最小 token 数，而是在训练效率、mIoU 和 BFScore 之间选择合适预算。
+
+相比之下，PQR preliminary ablation 只提供辅助证据。R2\_class\_balanced 相比 R0\_identity 仅有 +0.05 mIoU 的轻微改善，而 R2R4\_proto\_gate 未进一步提升 mIoU。这说明目标域伪标签可靠性建模仍值得研究，但当前结果不足以作为主要性能来源。综合来看，当前消融实验支持本文将 memory-efficient training 作为主线：MTC/SMR 在降低 memory attention 开销方面具有更直接、稳定的证据；PQR 则揭示了伪标签可靠性问题的研究价值，但在 v1.0 中应保持辅助定位。

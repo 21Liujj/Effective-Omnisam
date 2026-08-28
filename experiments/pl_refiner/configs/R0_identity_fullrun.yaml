@@ -1,0 +1,51 @@
+# experiments/pl_refiner/configs/R0_identity_fullrun.yaml
+# R0 baseline FULL-RUN — matched control for R2 / R2+R4 full-runs.
+# Refiner = identity (pass-through, bit-exact to original unsup path).
+# Reuses the SAME fixed base PL dir as R2/R2R4 so the only variable is valid_mask refinement.
+#
+# experiment_id      : R0_identity_fullrun
+# refiner_mode       : identity
+# full_train_allowed : true
+# NOTE: epoch-end val mIoU IS a legitimate result here (full epoch trained),
+#       UNLIKE the 5-step diagnostic artifact.
+
+pseudo_label_refiner:
+  mode: "identity"
+  enable: true
+  num_classes: 13
+  ignore_index: 255
+
+plugins:
+  # A: pseudo_conf_mask — same as validated A_Dtrain_Etrain config
+  pseudo_conf_mask:
+    enabled: true
+    threshold: 0.85
+    min_valid_ratio: 0.01
+    min_valid_pixels: 0
+    ignore_index: 255
+    fallback: "skip"
+
+  # D: Memory Compression — train-only, PL disabled
+  efficient_tam_memory:
+    enabled: true
+    mode: "pool"
+    compress_ratio: 0.5
+    pool_stride: 2
+    apply_in_pl: false
+    apply_in_train: true
+
+  # E: Sparse Memory Retrieval — train-only, PL disabled
+  efficient_sam2_sparse:
+    enabled: true
+    mode: "attn_topk"
+    keep_ratio: 0.5
+    min_keep_tokens: 64
+    saliency_source: "feature_norm"
+    cache_saliency: true
+    fallback_full_when_uncertain: true
+    apply_in_pl: false
+    apply_in_train: true
+
+# Reuse fixed base PL for ALL epochs (no PL regeneration). Same dir for R0/R2/R2R4.
+reuse_pl_dir: data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+train_max_iters: 0   # 0 = full epoch (NOT a 5-step diagnostic)

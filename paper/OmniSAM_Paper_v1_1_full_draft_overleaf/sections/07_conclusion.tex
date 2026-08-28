@@ -1,0 +1,10 @@
+\section{结论}
+\label{sec:conclusion}
+
+本文围绕全景图像语义分割中的无监督域适应问题展开，研究如何在 OmniSAM 框架下提高训练阶段的 memory efficiency。OmniSAM 通过 memory mechanism 建模全景 patch/view sequence 中的跨视场上下文，有助于维持语义一致性和边界连续性；但 memory attention 也会带来额外 token 交互成本。本文关注的核心问题是：如何在基本保持全景语义分割精度和边界质量的同时，减少训练阶段冗余 memory token 并降低训练开销。
+
+为此，本文提出 memory-efficient OmniSAM 改进框架，核心包括 Memory Token Compression (MTC) 和 Sparse Memory Retrieval (SMR)。MTC 通过空间压缩减少冗余 memory token，SMR 通过稀疏选择保留更有价值的 memory token；二者均作为 train-only memory-efficient modules 作用于 memory attention 前的 memory tokens，而不重新设计 OmniSAM 主干或改变语义分割任务定义。本文还探索了 Pseudo-label Quality Refinement (PQR) 作为辅助可靠性分析模块，用于讨论目标域伪标签噪声和类别不均衡问题，但当前不将其作为主要贡献或最终性能来源。
+
+初步实验表明，在 Cityscapes $\rightarrow$ DensePASS、OmniSAM sam2\_s、13 类协议、single seed 和 full protocol 设置下，MTC+SMR 将 mIoU 从 60.26 变为 60.16，BFScore 从 39.97 变为 39.86；同时，总训练耗时从 43m53s 降至 34m03s，单 iter 耗时从 5.27s 降至 4.09s，训练耗时下降约 22.4\%。这些结果说明，本文方法可以以轻微精度和边界质量代价换取训练效率提升。消融实验进一步表明，memory token 数量与 memory attention time 之间存在明确关联，但过强压缩会影响边界质量和细粒度语义，因此 token budget 需要根据任务目标进行权衡。
+
+本文当前结果仍具有边界。实验主要围绕 Cityscapes $\rightarrow$ DensePASS 展开，且主结果为 single seed；WildPASS、SynPASS、indoor panoramic datasets 等更多协议仍需补充。PQR 当前仅作为 preliminary ablation，R2 class-balanced filtering 只有轻微改善，prototype-guided gate 未进一步提升，因此后续仍需研究更稳定的 memory-aware pseudo-label quality 建模。未来工作还应补充多 seed 验证、可视化与 failure case 分析，并进一步评估不同类别、边界区域和小目标在 token reduction 下的表现。

@@ -1,0 +1,15 @@
+CONFIG_DIFF_CHECK=PASS
+allowed_paths=plugins.pano_smb.enabled
+observed_paths=plugins.pano_smb.enabled
+unexpected_paths=NONE
+missing_paths=NONE
+
+--- experiments/pano_smb_stage2/B0_legacy/config.yaml
++++ experiments/pano_smb_stage2/B1_pano_smb/config.yaml
+@@
+   pano_smb:
+-    enabled: false
++    enabled: true
+     min_tokens: 256
+     verbose: false
+     log_interval: 200

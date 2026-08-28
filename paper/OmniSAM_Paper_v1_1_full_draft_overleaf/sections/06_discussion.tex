@@ -1,0 +1,27 @@
+\section{讨论与局限性}
+\label{sec:discussion}
+
+\subsection{Memory-efficient training 的意义}
+OmniSAM 中的 memory mechanism 为全景语义分割提供了重要的跨视场建模能力。对于被切分为 patch/view sequence 的全景图像，memory attention 可以在当前视图与历史视图之间传递上下文，从而缓解局部窗口独立预测带来的语义割裂问题。然而，这一机制也会引入额外的 token 交互成本，尤其在 UDA 训练中，源域监督、目标域伪标签监督和 memory attention 同时参与优化，训练开销会成为实验迭代和消融分析的实际限制。
+
+本文的核心价值并不是重新设计一个新的全景分割网络，而是在 OmniSAM 框架下指出训练阶段存在 memory token redundancy，并通过 MTC 与 SMR 对其进行压缩和稀疏检索。二者作为 train-only memory-efficient modules，不改变全景语义分割任务定义，也不改变 OmniSAM 主体表示能力，而是降低进入 memory attention 的 token 规模。在单卡或有限算力场景下，这种训练效率提升具有实际意义：它可以降低完整 UDA 训练和消融实验的时间成本，也有助于后续进行更多参数搜索、模块组合和协议复核。本文结果并不意味着训练成本问题已经被彻底解决，也不直接保证适用于所有 memory-based 视觉模型；更准确地说，它表明 OmniSAM 全景 UDA 训练中的 memory token 存在可利用的高效化空间。
+
+\subsection{精度、边界质量与效率之间的权衡}
+主结果和消融实验共同说明，MTC+SMR 可以用轻微的 mIoU 与 BFScore 下降换取训练耗时下降。对于本文关注的全景语义分割任务，这一权衡需要谨慎理解。mIoU 主要衡量类别级区域预测质量，而 BFScore 更直接反映边界定位和边界连续性。全景图像存在 ERP 投影、视场拼接和长距离语义关联，边界质量往往会影响视觉一致性，因此不能简单地以最小 memory token 数作为唯一目标。
+
+Token budget 分析显示，更低的 token budget 可以进一步降低 memory attention time，但 mIoU 和 BFScore 也可能逐步下降。若应用场景更重视训练速度或快速验证模块设计，可以采用更 aggressive token reduction；若任务更重视边界质量、小目标或细粒度结构，则应保留更多 memory token 或采用更温和的检索比例。此外，step time 并不完全随 token budget 单调下降，这说明效率分析不能只依赖单步总时间，还需要结合 memory attention time、总训练耗时和稀疏选择本身的实现开销综合判断。由此可见，memory-efficient training 的关键不是盲目减少 token，而是在精度、边界质量和训练效率之间选择合适平衡点。
+
+\subsection{伪标签可靠性分析}
+PQR 是本文的辅助分析方向，用于观察目标域伪标签可靠性对 OmniSAM UDA 训练的影响。当前 preliminary ablation 显示，R2\_class\_balanced 相比 R0\_identity 仅带来轻微改善，而 R2R4\_proto\_gate 未进一步提升最终 mIoU。这说明伪标签质量建模本身仍然重要，但当前实现尚不足以形成稳定的主要性能来源。
+
+造成这一现象的原因可能有多方面。首先，current-batch prototype 的稳定性有限，尤其在类别分布不均衡时，少数类或小目标类的 prototype 估计可能不充分。其次，目标域特征仍然存在域偏移，基于当前特征空间的 prototype similarity 未必能完全反映伪标签真实性。再次，过强过滤可能减少有效监督像素，使目标域训练信号变得更稀疏。这些解释仍需更多诊断和实验支持，因此本文不将 PQR 写成主贡献，也不将 prototype-guided gate 解释为已验证的性能提升模块。后续可以继续研究 memory-aware PQR，但当前 R6\_memory\_plq 未纳入已完成方法和主实验结论。
+
+\subsection{当前实验范围的局限}
+当前 v1.0 的实验范围主要基于本地可确认 checkpoint、伪标签产物和可复现实验记录展开，核心设置为 Cityscapes $\rightarrow$ DensePASS、sam2\_s、13 类协议和 single seed。该范围足以支持本文关于 memory-efficient training 的初步结论，但仍不能替代更完整的多数据集、多随机种子验证。WildPASS、SynPASS、Stanford360 / Stanford2D3D、Matterport3D 等数据集具有补充价值，但当前 checkpoint、协议或定量结果尚未完全审计，因此本文暂不把跨数据集验证纳入当前结论范围。
+
+此外，本文主要分析训练阶段 memory attention 开销，尚未正式报告推理阶段速度变化，也不讨论部署端推理阶段的收益。当前实验也尚未充分展开 failure case、可视化分析和类别级边界错误诊断。由于 checkpoint 与配置协议的可复现范围仍有限，部分扩展设置暂时只能作为后续实验方向。这些限制并不否定当前结果，而是定义了本文 v1.0 的实验边界：当前证据主要支持 Cityscapes $\rightarrow$ DensePASS single-seed 设置下的 memory-efficient training，可推广性仍需后续验证。
+
+\subsection{后续工作}
+后续工作首先需要补充 multi-seed 实验，以评估 MTC/SMR 在不同随机种子下的稳定性，并进一步扩展到 WildPASS、SynPASS 以及 indoor panoramic datasets 等更多协议。对于每个新增协议，应同步完善 checkpoint、配置、伪标签目录和验证日志的审计，避免不同实验口径混用。
+
+其次，后续可以加入更系统的可视化和 failure case 分析，观察 token reduction 对不同类别、边界区域、小目标和跨视场结构的影响。PQR 方向也可以继续发展为 memory-aware pseudo-label quality 建模，将跨视场 memory consistency 与类别均衡、prototype reliability 结合起来。此外，虽然本文没有报告推理阶段加速，但未来可以单独评估 MTC/SMR 或相关 token-efficient 策略是否能在推理阶段受益，并分析其与训练阶段高效化之间的差异。

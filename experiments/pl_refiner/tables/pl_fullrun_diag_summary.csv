@@ -1,0 +1,4 @@
+Run,Method,refiner_records,proto_records,mean_total_vr,mean_common_vr,mean_rare_vr,mean_ext_rare_vr,mean_pseudo_vr,mean_ignore_r,mean_loss_sup,mean_loss_unsup,proto_sim_mean,proto_sim_std,proto_valid_ratio,proto_nan
+R0,Efficient + Identity PL,4500,0,0.0000,0.0000,0.0000,0.0000,0.9908,1.0000,0.1073,0.0194,N/A,N/A,N/A,N/A
+R2,Efficient + R2 Class-balanced PL,4500,4500,0.4884,0.4852,0.6807,0.6632,0.4884,0.5116,0.1073,0.0068,0.8793,0.0709,0.4893,0.0000
+R2R4,Efficient + R2 Class-balanced + R4 Proto-gate,4500,4500,0.4478,0.4853,0.6806,0.6641,0.4478,0.5522,0.1073,0.0054,0.8789,0.0708,0.4893,0.0000

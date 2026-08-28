@@ -1,0 +1,39 @@
+# experiments/pl_refiner/configs/R3_plq_basic.yaml
+# R3 plq_basic: adds Pseudo Label Quality score (conf * entropy * local_agreement).
+# Builds on R2 (class_balanced) by adding PLQ-weighted CE.
+#
+# experiment_id      : R3_plq_basic
+# refiner_mode       : plq_basic
+# use_class_balance  : true
+# use_plq            : true
+# use_prototype      : false
+# use_correction     : false
+# use_memory_consistency: false
+# memory_config      : none
+# full_train_allowed : true
+# status             : NOT_IMPLEMENTED_YET — requires adaptation/pseudo_label/plq.py
+
+pseudo_label_refiner:
+  mode: "plq_basic"
+  enable: true
+  class_balance:
+    top_ratio: 0.67
+    min_pixels_per_class: 10
+    num_classes: 13
+  plq:
+    use_entropy: true
+    use_local_agreement: true
+    local_kernel_size: 3
+    weight_power: 1.0       # PLQ^power as loss weight
+
+plugins:
+  pseudo_conf_mask:
+    enabled: true
+    threshold: 0.85
+  efficient_tam_memory:
+    enabled: false
+  efficient_sam2_sparse:
+    enabled: false
+
+reuse_pl_dir: data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+train_max_iters: 5

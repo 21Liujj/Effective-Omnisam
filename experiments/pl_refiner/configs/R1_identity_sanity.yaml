@@ -1,0 +1,17 @@
+# experiments/pl_refiner/configs/R1_identity_sanity.yaml
+# R1 / mode=identity sanity check.
+# Expected: loss_unsup, valid_ratio, ignore_ratio identical to R0 baseline.
+
+pseudo_label_refiner:
+  mode: "identity"
+
+plugins:
+  pseudo_conf_mask:
+    enabled: false
+  efficient_tam_memory:
+    enabled: false
+  efficient_sam2_sparse:
+    enabled: false
+
+reuse_pl_dir: data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+train_max_iters: 5

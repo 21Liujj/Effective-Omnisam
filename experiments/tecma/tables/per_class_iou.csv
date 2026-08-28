@@ -1,0 +1,14 @@
+class_id,class_name,baseline_omnisam_IoU,A_ccpm_IoU,A_Dtrain_Etrain_IoU,delta_IoU,abs_delta_IoU,delta_vs_baseline,rank_drop,note
+0,road,80.23,80.25,80.25,0.0,0.0,0.02,10,large-area semantic class; mostly stable
+1,sidewalk,47.33,47.35,47.62,0.27,0.27,0.29,12,regular semantic class
+2,building,89.67,89.67,89.53,-0.14,0.14,-0.14,7,large-area semantic class; mostly stable
+3,wall,43.77,43.78,44.4,0.62,0.62,0.63,13,thin structure / boundary-sensitive class
+4,fence,48.92,48.92,48.15,-0.77,0.77,-0.77,2,thin structure / boundary-sensitive class
+5,pole,43.64,43.64,43.36,-0.28,0.28,-0.28,5,small/sparse object; inspect in qualitative/failure cases
+6,traffic light,27.88,27.88,26.23,-1.65,1.65,-1.65,1,small/sparse object; inspect in qualitative/failure cases
+7,traffic sign,32.52,32.52,32.23,-0.29,0.29,-0.29,4,small/sparse object; inspect in qualitative/failure cases
+8,vegetation,78.77,78.77,78.63,-0.14,0.14,-0.14,8,large-area semantic class; mostly stable
+9,terrain,45.15,45.15,44.76,-0.39,0.39,-0.39,3,regular semantic class
+10,sky,94.61,94.61,94.62,0.01,0.01,0.01,11,large-area semantic class; mostly stable
+11,person,67.5,67.5,67.42,-0.08,0.08,-0.08,9,small/sparse object; inspect in qualitative/failure cases
+12,car,83.33,83.34,83.08,-0.26,0.26,-0.25,6,regular semantic class

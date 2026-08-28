@@ -1,0 +1,16 @@
+\section{引言}
+\label{sec:introduction}
+
+全景语义分割为 $360^\circ$ 场景中的每个像素预测语义类别，为自动驾驶与机器人提供完整的周向环境表征~\cite{yang2021omnirange,ma2021densepass}。相比普通透视图，等距柱状投影覆盖更大视场，却也带来显著的几何畸变、区域尺度变化和首尾边界连续性问题。同一道路、建筑或车辆可能跨越多个局部视图，模型不仅要识别局部细节，还要在长距离范围内维持语义和边界的一致性。在 Cityscapes~\cite{cordts2016cityscapes} $\rightarrow$ DensePASS~\cite{ma2021densepass} 的无监督域适应设置中，源域提供像素级标注，目标域仅包含无标签全景图像；成像方式、投影结构与场景分布的共同差异，使直接迁移源域模型更加困难。尤其在首尾接缝、远距离区域和细长结构附近，局部预测既受投影变形影响，也缺少普通透视模型所依赖的稳定尺度先验。
+
+目标域缺少人工标注时，语义分割通常依靠自训练和伪标签构造监督。然而，全景图像的畸变区域、视图衔接处、稀有类别和小目标更容易出现低置信或错误预测，错误监督还可能在迭代训练中累积。单纯提高伪标签阈值会减少有效像素并偏向易分类类别，而只对局部窗口独立预测又难以利用跨视场结构。因此，全景 UDA~\cite{zhang2022bending,zheng2023dppass,zheng2023datr,zhang2024goodsam} 同时需要稳定的上下文传播与可控的目标域监督。前者决定跨视场语义能否连续传递，后者决定自训练是否会放大初始错误；二者共同影响目标域收敛质量。
+
+OmniSAM~\cite{zhong2025omnisam} 为这一问题提供了具有代表性的基础框架。它利用 SAM/SAM2 风格视觉模型的表征能力~\cite{kirillov2023segment,ravi2025sam2}，将全景图像组织为 patch/view sequence，并通过 memory mechanism 在当前视图与历史视图之间传递上下文。道路延展、建筑边界以及天空与地面的关系由此能够跨越局部窗口，缓解独立预测造成的语义割裂。memory-based 建模因此适合全景场景，但也使每个当前视图需要与累积的历史表示进行 attention 交互。随着 patch 数和记忆长度增加，历史表示的规模成为模型训练成本中不可忽略的一部分。
+
+本文关注其中的训练效率瓶颈。随着视图序列和 memory bank 增长，memory token 数量直接扩大 attention 计算；在同时包含源域监督、目标域伪标签和适配损失的 UDA 训练中，该开销会显著增加实验周期。更重要的是，历史记忆并非同等有效：相邻空间区域常包含重复纹理，大面积背景在多个视图中反复出现，部分 token 与当前预测相关性较低。这种 memory token redundancy 表明，完整保留历史表示并非唯一选择~\cite{rao2021dynamicvit,bolya2023tome,lu2023tokensharing}，但过度压缩又可能损害边界、小目标和低响应类别。与直接缩小主干网络相比，从 memory 路径入手还能保持视觉编码器与语义解码器不变，从而更清晰地分析 token 规模和 attention 开销之间的关系。
+
+为此，本文提出由 Memory Token Compression (MTC) 与 Sparse Memory Retrieval (SMR) 组成的 memory-efficient training 方案。MTC 将具有空间结构的记忆恢复为特征图并聚合局部邻域，以减少结构冗余；SMR 根据 token 重要性选择历史记忆，以减少内容冗余。二者串联后缩小进入 memory attention 的 token 规模，同时保持 OmniSAM 的分割任务、主干与损失定义不变。本文还以类别均衡过滤和原型引导过滤探索伪标签质量优化（Pseudo-label Quality Refinement, PQR），但其作用仅限于辅助分析。该设计使效率主线与监督可靠性问题彼此分离，避免将两类机制的效果合并解释。
+
+在 Cityscapes $\rightarrow$ DensePASS、sam2\_s、13 类 single-seed 实验中，MTC+SMR 将训练时间降低约 22.4\%，mIoU 从 60.26 变为 60.16，BFScore 从 39.97 变为 39.86。模块消融显示，memory token 从 32768 减少到 4096 时，memory attention time 由约 117.48/117.56s 降至 51.92s；token budget 曲线和定性结果进一步揭示了效率、区域精度与边界质量之间的折中。
+
+本文贡献概括如下：1）识别并系统分析 OmniSAM 全景 UDA 训练中的 memory token redundancy，明确其与 attention 开销的关系；2）提出 MTC+SMR，在基本维持主要语义结构的同时实现约 22.4\% 的训练时间下降；3）通过模块消融、token budget 与 full-protocol 定性比较验证效率--精度权衡，并以 PQR 实验补充讨论伪标签可靠性的作用边界。

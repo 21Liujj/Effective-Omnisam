@@ -1,0 +1,20 @@
+\section{方法}
+\label{sec:method}
+
+\subsection{问题定义}
+给定有标注源域 Cityscapes 和无标注目标域 DensePASS，目标是在不使用目标域训练标签的前提下学习全景语义分割模型。当前 v1.0 主要采用 13 类协议，并以 DensePASS val 作为验证集。
+
+\subsection{OmniSAM Baseline}
+OmniSAM baseline 使用 SAM2 backbone、LoRA 微调和全景滑窗推理流程。后续正文将补充 encoder、memory bank、decoder 和验证流程的详细结构。
+
+\subsection{Memory Token Compression, MTC}
+MTC 用于压缩训练阶段参与 memory attention 的 memory tokens，从而降低 attention 计算量。当前占位版本仅描述模块位置和动机，具体实现细节后续补充。
+
+\subsection{Sparse Memory Retrieval, SMR}
+SMR 通过选择更重要的 memory tokens 参与检索，减少冗余记忆访问。该模块与 MTC 共同构成本文 memory-efficient 主线。
+
+\subsection{Pseudo-label Quality Refinement, PQR}
+PQR 作为辅助可靠性模块，用于探索目标域伪标签过滤、类别均衡和 prototype-guided 可靠性建模。当前实验表明其更适合作为探索性消融与后续工作，不作为 v1.0 最强主贡献。
+
+\subsection{训练目标}
+训练目标包含源域监督损失、目标域伪标签无监督损失和已有适配项。完整公式和权重设置将在后续正文中基于代码与审计材料补充。

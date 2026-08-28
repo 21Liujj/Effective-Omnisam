@@ -1,0 +1,41 @@
+[logger] wandb disabled, using TensorBoard only.
+[plugins] enabled=[] (base behavior)
+[plugins] enabled=[] (base behavior)
+[trainable] parameter groups:
+  - text_adapter: 0 (lr=2.000000e-06)
+  - text_fusion_alpha: 0 (lr=2.000000e-06)
+  - image_to_text_cross_attn: 0
+  - text_fusion_beta: 0 (lr=2.000000e-06)
+  - text_to_image_grounding: 0
+  - text_grounding_gamma: 0 (lr=2.000000e-06)
+  - text_grounding_logit_scale: 0 (lr=2.000000e-06)
+  - text_scale: 0 (lr=2.000000e-06)
+  - semantic_decoder: 291341
+  - depth_adapter: 0
+  - lora: 0
+  - memory: 0
+  - total_trainable: 291341
+[text-trainable]
+text_projector: 0
+image_to_text_cross_attn: 0
+text_fusion_beta: 0
+text_to_image_grounding: 0
+text_grounding_gamma: 0
+text_grounding_logit_scale: 0
+semantic_decoder: 291341
+lora: 0
+total_trainable: 291341
+[trainable] depth_adapter_trainable_params=0
+[trainable] total_trainable_params=291341
+/root/autodl-tmp/OmniSAM-main/adaptation/trainer.py:29: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  self.scaler = torch.cuda.amp.GradScaler()
+Reuse fixed pseudo-label dir for epoch 1: data_pd_exp_final_2000/base_last_20260425_232941/DensePASS/sam2_s/Cityscapes_13cls/epoch1
+Epoch 1 [Train]:   0%|          | 0/5 [00:00<?, ?it/s]/root/autodl-tmp/OmniSAM-main/adaptation/strategies.py:166: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=use_amp):
+/root/autodl-tmp/OmniSAM-main/adaptation/strategies.py:233: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(enabled=use_amp):
+Epoch 1 [Train]:  20%|██        | 1/5 [00:05<00:21,  5.36s/it]Epoch 1 [Train]:  40%|████      | 2/5 [00:07<00:10,  3.53s/it]Epoch 1 [Train]:  60%|██████    | 3/5 [00:09<00:05,  2.97s/it]Epoch 1 [Train]:  80%|████████  | 4/5 [00:12<00:02,  2.67s/it]Epoch 1 [Train]: 100%|██████████| 5/5 [00:14<00:00,  2.55s/it]Epoch 1 [Train]: 100%|██████████| 5/5 [00:14<00:00,  2.89s/it]
+[text-dyn] epoch=1 fusion_alpha(start=0.000000,end=0.000000,mean=0.000000,std=0.000000) text_scale(start=0.000000,end=0.000000,mean=0.000000,std=0.000000)
+[text-crossattn] type=logit_add proto_mode=real beta=0.000000 attn_entropy=0.000000 feature_delta_ratio=0.000000 prediction_change_ratio=0.000000
+[text-grounding] type=logit_add proto_mode=real gamma=0.000000 logit_scale=0.000000 attn_entropy=0.000000 text_only_change=0.000000 loss_ground=0.000000
+Epoch 1 [Val]:   0%|          | 0/100 [00:00<?, ?it/s]Epoch 1 [Val]:   1%|          | 1/100 [00:03<05:08,  3.11s/it]Epoch 1 [Val]:   2%|▏         | 2/100 [00:03<02:33,  1.57s/it]Epoch 1 [Val]:   3%|▎         | 3/100 [00:04<01:44,  1.08s/it]Epoch 1 [Val]:   4%|▍         | 4/100 [00:04<01:21,  1.18it/s]Epoch 1 [Val]:   5%|▌         | 5/100 [00:05<01:09,  1.37it/s]Epoch 1 [Val]:   6%|▌         | 6/100 [00:05<01:01,  1.53it/s]Epoch 1 [Val]:   7%|▋         | 7/100 [00:06<00:55,  1.66it/s]Epoch 1 [Val]:   8%|▊         | 8/100 [00:06<00:52,  1.74it/s]Epoch 1 [Val]:   9%|▉         | 9/100 [00:07<00:51,  1.78it/s]Epoch 1 [Val]:  10%|█         | 10/100 [00:07<00:49,  1.81it/s]Epoch 1 [Val]:  11%|█         | 11/100 [00:08<00:46,  1.90it/s]Epoch 1 [Val]:  12%|█▏        | 12/100 [00:08<00:47,  1.84it/s]Epoch 1 [Val]:  13%|█▎        | 13/100 [00:09<00:44,  1.94it/s]Epoch 1 [Val]:  14%|█▍        | 14/100 [00:09<00:44,  1.93it/s]Epoch 1 [Val]:  15%|█▌        | 15/100 [00:10<00:43,  1.94it/s]Epoch 1 [Val]:  16%|█▌        | 16/100 [00:10<00:42,  1.95it/s]Epoch 1 [Val]:  17%|█▋        | 17/100 [00:11<00:42,  1.94it/s]Epoch 1 [Val]:  18%|█▊        | 18/100 [00:11<00:42,  1.95it/s]Epoch 1 [Val]:  19%|█▉        | 19/100 [00:12<00:41,  1.96it/s]Epoch 1 [Val]:  20%|██        | 20/100 [00:12<00:40,  1.98it/s]Epoch 1 [Val]:  21%|██        | 21/100 [00:13<00:38,  2.04it/s]Epoch 1 [Val]:  22%|██▏       | 22/100 [00:13<00:41,  1.87it/s]Epoch 1 [Val]:  23%|██▎       | 23/100 [00:14<00:39,  1.95it/s]Epoch 1 [Val]:  24%|██▍       | 24/100 [00:14<00:40,  1.85it/s]Epoch 1 [Val]:  25%|██▌       | 25/100 [00:15<00:39,  1.89it/s]Epoch 1 [Val]:  26%|██▌       | 26/100 [00:15<00:38,  1.91it/s]Epoch 1 [Val]:  27%|██▋       | 27/100 [00:16<00:37,  1.93it/s]Epoch 1 [Val]:  28%|██▊       | 28/100 [00:16<00:36,  1.95it/s]Epoch 1 [Val]:  29%|██▉       | 29/100 [00:17<00:36,  1.94it/s]Epoch 1 [Val]:  30%|███       | 30/100 [00:17<00:35,  1.95it/s]Epoch 1 [Val]:  31%|███       | 31/100 [00:18<00:34,  2.02it/s]Epoch 1 [Val]:  32%|███▏      | 32/100 [00:18<00:34,  2.00it/s]Epoch 1 [Val]:  33%|███▎      | 33/100 [00:19<00:33,  1.98it/s]Epoch 1 [Val]:  34%|███▍      | 34/100 [00:19<00:32,  2.00it/s]Epoch 1 [Val]:  35%|███▌      | 35/100 [00:20<00:32,  2.00it/s]Epoch 1 [Val]:  36%|███▌      | 36/100 [00:20<00:31,  2.05it/s]Epoch 1 [Val]:  37%|███▋      | 37/100 [00:21<00:32,  1.95it/s]Epoch 1 [Val]:  38%|███▊      | 38/100 [00:21<00:30,  2.01it/s]Epoch 1 [Val]:  39%|███▉      | 39/100 [00:22<00:30,  1.98it/s]Epoch 1 [Val]:  40%|████      | 40/100 [00:22<00:30,  1.98it/s]Epoch 1 [Val]:  41%|████      | 41/100 [00:23<00:29,  1.98it/s]Epoch 1 [Val]:  42%|████▏     | 42/100 [00:23<00:29,  1.99it/s]
