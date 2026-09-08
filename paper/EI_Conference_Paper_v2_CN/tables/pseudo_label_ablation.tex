@@ -1,0 +1,17 @@
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.08}
+  \caption{固定伪标签设置下的辅助伪标签质量消融。结果仅用于探索监督可靠性，不构成本文主要性能结论。}
+  \label{tab:pseudo_label_ablation}
+  \begin{tabular}{lccc}
+    \toprule
+    方法 & mIoU$\uparrow$ & 相对 R0 & 相对上一配置 \\
+    \midrule
+    Identity（R0） & 60.02 & -- & -- \\
+    类别均衡过滤（R2） & 60.07 & +0.05 & +0.05 \\
+    + 原型引导门控（R2+R4） & 60.05 & +0.03 & -0.02 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

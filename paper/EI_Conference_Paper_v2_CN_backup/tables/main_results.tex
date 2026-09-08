@@ -1,0 +1,16 @@
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.08}
+  \caption{Cityscapes $\rightarrow$ DensePASS full protocol 下的分割性能与训练效率比较。所有结果采用 \texttt{sam2\_s}、13 类协议和单随机种子设置；BFScore 来自同一验证流程的 \texttt{[ValSummary]}。}
+  \label{tab:main_results}
+  \begin{tabular}{lccccc}
+    \toprule
+    方法 & mIoU$\uparrow$ & BFScore$\uparrow$ & 训练耗时$\downarrow$ & Iter 时间$\downarrow$ & 降幅 \\
+    \midrule
+    OmniSAM & \textbf{60.26} & \textbf{39.97} & 43m53s & 5.27s & -- \\
+    Ours (MTC+SMR) & 60.16 & 39.86 & \textbf{34m03s} & \textbf{4.09s} & \textbf{22.4\%} \\
+    \bottomrule
+  \end{tabular}
+\end{table}

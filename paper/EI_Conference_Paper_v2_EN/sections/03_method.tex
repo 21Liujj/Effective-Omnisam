@@ -1,0 +1,130 @@
+\section{Method}
+\label{sec:method}
+
+\subsection{Problem Definition and Overall Framework}
+Given labeled source domain
+\[
+\mathcal{D}_s=\{(x_s^i,y_s^i)\}_{i=1}^{N_s},
+\]
+and unlabeled target domain panoramic data
+\[
+\mathcal{D}_t=\{x_t^j\}_{j=1}^{N_t},
+\]
+the goal is to learn a pixel-level prediction model without using target domain human annotations. The joint objective is written as
+\[
+\min_{\theta}\ \mathcal{L}_{seg}(\mathcal{D}_s;\theta)+\lambda\mathcal{L}_{uda}(\mathcal{D}_t;\theta),
+\]
+where $\mathcal{L}_{seg}$ is the source domain supervised loss and $\mathcal{L}_{uda}$ represents target domain pseudo-label supervision or consistency constraints.
+
+OmniSAM~\cite{zhong2025omnisam} represents panoramic images as patch/view sequences. For the $t$-th view, a SAM/SAM2-style visual encoder extracts local query representations, a memory bank stores context from previous views, and memory attention fuses them before the decoder outputs semantic predictions~\cite{kirillov2023segment,ravi2025sam2}. Historical memory can connect structures such as roads, buildings, and sky that are truncated in local windows, but token count grows with view sequences~\cite{rao2021dynamicvit,bolya2023tome,lu2023tokensharing}. This paper inserts MTC and SMR sequentially before attention: the former compresses spatial redundancy, the latter selects content-relevant memories; PQR only acts on target domain supervision masks. All three modules do not change segmentation output definitions, with MTC+SMR forming the method mainline. The overall pipeline is shown in Figure~\ref{fig:overall_pipeline}. This paper introduces MTC and SMR sequentially into OmniSAM's memory interaction path, and retains PQR as an optional target domain pseudo-label reliability branch.
+
+\begin{figure}[t]
+    \centering
+    \fbox{
+        \parbox[c][0.18\textheight][c]{0.90\linewidth}{
+            \centering
+            \textbf{Overall Pipeline Placeholder}\\[0.6em]
+            OmniSAM Baseline
+            $\rightarrow$ Memory Token Compression (MTC)
+            $\rightarrow$ Sparse Memory Retrieval (SMR)\\[0.4em]
+            Optional Pseudo-label Quality Refinement (PQR)
+        }
+    }
+    \caption{The proposed memory-efficient OmniSAM panoramic unsupervised domain adaptation framework. The final figure will show the OmniSAM backbone, MTC and SMR in the training stage, and the optional PQR auxiliary branch.}
+    \label{fig:overall_pipeline}
+\end{figure}
+
+\subsection{Memory Token Compression}
+Let historical memory tokens be
+\[
+M=\{m_i\}_{i=1}^{N_m},\quad m_i\in\mathbb{R}^{C},
+\]
+which can be written as
+\[
+M\in\mathbb{R}^{H_m\times W_m\times C},\quad N_m=H_mW_m
+\]
+when preserving spatial structure. MTC restores tokens to spatial feature maps, performs pooling aggregation over local neighborhoods, and synchronously processes positional encodings:
+\[
+\tilde{M}=\mathrm{Flatten}(\mathrm{Pool}(M;r)),
+\]
+\[
+\tilde{M}=\mathrm{MTC}(M),\quad
+\tilde{M}\in\mathbb{R}^{\tilde{N}_m\times C},\quad
+\tilde{N}_m<N_m.
+\]
+Here $r$ controls aggregation scale, with channel dimension unchanged. Applying consistent spatial aggregation to memory tokens and positional encodings ensures each compressed token still corresponds to a clear local region in the panorama. This operation does not delete positions based on class labels, but rather merges redundant representations of repetitive backgrounds and adjacent regions in a structured manner, thereby preserving major semantic information as much as possible. Larger aggregation scales result in more pronounced token count reduction, but local boundaries and small object details become more easily smoothed.
+
+If the number of query tokens is $N_q$, the main interaction complexity of original dense memory attention is approximately
+\[
+\mathcal{O}(N_qN_mC),
+\]
+which becomes after compression
+\[
+\mathcal{O}(N_q\tilde{N}_mC).
+\]
+Therefore, when $\tilde{N}_m\ll N_m$, the computational scale of subsequent attention can be directly reduced. The complexity expression characterizes the main interaction term between query and memory; actual training time also includes visual encoding, decoding, data loading, and optimizer updates. MTC only adjusts memory density without changing current view resolution, backbone, or decoder, so its effect can be analyzed separately through memory token count and attention time.
+
+\subsection{Sparse Memory Retrieval}
+After structured compression, historical memory may still contain tokens weakly correlated with current predictions. SMR computes importance for each token as
+\[
+s_i=g(m_i),
+\]
+and determines $K$ based on keep ratio, selecting top-$K$ memories and their positional encodings:
+\[
+\hat{M}=\{m_i\mid i\in\mathrm{TopK}(s,K)\},\quad
+\hat{M}\in\mathbb{R}^{K\times C}.
+\]
+This paper adopts feature norm as a lightweight saliency measure:
+\[
+s_i=\lVert m_i\rVert_2.
+\]
+This score requires no additional supervision or prediction heads and can be computed directly from memory representations. Selection count is given by $K=\lceil\rho\tilde{N}_m\rceil$, where $\rho\in(0,1]$ is the keep ratio; the same indices synchronously act on memory tokens and positional encodings to avoid breaking their correspondence.
+
+MTC and SMR cascade as
+\[
+\hat{M}=\mathrm{SMR}(\mathrm{MTC}(M)),
+\]
+making actual attention complexity approximately
+\[
+\mathcal{O}(N_qKC).
+\]
+MTC handles spatial aggregation and SMR handles content selection, separately reducing structural and informational redundancy. If strong sparse selection is applied directly to original memory, locally repetitive regions may still occupy many slots; aggregation followed by retrieval allows the selection process to act on more compact spatial units. On the other hand, feature norm only reflects representation response strength and does not guarantee complete consistency with importance across all classes. Too low a keep ratio may discard context needed for boundaries, small objects, or low-response classes, so token budget needs to be determined through ablation rather than assuming smaller is better.
+
+\subsection{Training Objective and Auxiliary PQR}
+Target domain prediction probability, pseudo-labels, and confidence are defined as
+\[
+p_t=f_{\theta}(x_t),\qquad
+\hat{y}_t=\arg\max_c p_t(c),\quad q_t=\max_c p_t(c).
+\]
+The basic reliability mask is~\cite{zou2018cbst,hoyer2023mic,zheng2025sfuda360pp}
+\[
+\mathcal{M}_t=\mathbb{I}(q_t\geq\tau).
+\]
+To mitigate bias of uniform thresholds toward easily classified categories, class-balanced filtering uses class-specific thresholds:
+\[
+\mathcal{M}_t(u)=\mathbb{I}\!\left(q_t(u)\geq\tau_{\hat{y}_t(u)}\right).
+\]
+Prototype-guided filtering measures reliability with similarity between target features $z_t(u)$ and predicted class prototype $p_{\hat{y}_t(u)}$:
+\[
+r_t(u)=\mathrm{sim}\!\left(z_t(u),p_{\hat{y}_t(u)}\right),
+\]
+\[
+\mathcal{G}_t(u)=\mathbb{I}\!\left(r_t(u)\geq\gamma_{\hat{y}_t(u)}\right),\qquad
+\mathcal{M}^{pqr}_t=\mathcal{M}_t\cap\mathcal{G}_t.
+\]
+This branch serves only for auxiliary examination of pseudo-label reliability and is not part of MTC+SMR's efficiency mechanism. Class-specific thresholds attempt to alleviate bias of uniform thresholds toward easily classified categories, while prototype similarity requires predicted classes to be consistent with target domain feature structure; both may improve pseudo-label purity but may also reduce effective supervision coverage due to excessive filtering, thus requiring comparison with identity settings under the same pseudo-label protocol.
+
+The final training loss is
+\[
+\mathcal{L}=\mathcal{L}_{src}+\lambda_t\mathcal{L}_{tgt},
+\qquad
+\mathcal{L}_{src}=\mathrm{CE}\big(f_{\theta}(x_s),y_s\big),
+\]
+\[
+\mathcal{L}_{tgt}
+=
+\frac{1}{|\mathcal{M}^{pqr}_t|}
+\sum_{u\in\mathcal{M}^{pqr}_t}
+\mathrm{CE}\big(f_{\theta}(x_t)_u,\hat{y}_t(u)\big).
+\]
+When PQR is not enabled, the supervision region degenerates to the basic pseudo-label effective mask. If the mask contains too few pixels, target domain gradients will also weaken accordingly, which explains why PQR needs to maintain auxiliary positioning. MTC and SMR only change the input scale to memory attention without changing the above loss form; therefore comparisons of efficiency modules use the same supervision objective, and observed training cost changes can be mainly attributed to the memory path.

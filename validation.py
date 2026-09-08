@@ -8,6 +8,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import argparse
+from adaptation.boundary_prompt_inference import apply_bepl_to_logits
 import json
 import random
 import sys
@@ -347,7 +348,7 @@ def validation(model: nn.Module, data_loader: DataLoader, device: torch.device,
             if dataset_name in ("DensePASS", "WildPASS"):
                 # Calculate padded width for SCM
                 padded_width = (4096 + 2 * args.scm_pad_width) if args.enable_scm else 4096
-                
+
                 merged_pred = merge_width_scatter_np(
                     logits_np=logits_maps,
                     orig_size=(1024, padded_width),
@@ -357,14 +358,24 @@ def validation(model: nn.Module, data_loader: DataLoader, device: torch.device,
                     device=str(device),
                     return_probs=False,
                 )
-                
+
                 # SCM: Crop padded prediction back to original width
                 if args.enable_scm:
                     pad_w = args.scm_pad_width
                     merged_pred = merged_pred[:, :, pad_w:-pad_w]
-                
-                
-                
+
+                # BEPL: Apply boundary-enhanced prompt
+                if args.enable_bepl:
+                    merged_pred_tensor = torch.from_numpy(merged_pred)
+                    merged_pred_tensor = apply_bepl_to_logits(
+                        merged_pred_tensor,
+                        seam_width=args.bepl_seam_width,
+                        strength=args.bepl_strength
+                    )
+                    merged_pred = merged_pred_tensor.numpy()
+
+
+
                 pred_h, pred_w = 400, 2048
                 pred_resized = np.zeros((B, pred_h, pred_w))
                 gt_eval = np.zeros((B, pred_h, pred_w), dtype=np.int64)
@@ -436,7 +447,7 @@ def validation(model: nn.Module, data_loader: DataLoader, device: torch.device,
                 stride_w = int(getattr(args, "stanford_stride_w", 256))
                 # Calculate padded width for SCM
                 padded_width = (4096 + 2 * args.scm_pad_width) if args.enable_scm else 4096
-                
+
                 merged_pred = merge_width_scatter_np(
                     logits_np=logits_maps,
                     orig_size=(H_full, W_full),
@@ -869,6 +880,23 @@ def main():
         type=int,
         default=512,
         help='Circular padding width for SCM (default: 512, half of window_size 1024)'
+    )
+    parser.add_argument(
+        '--enable_bepl',
+        action='store_true',
+        help='Enable Boundary-Enhanced Prompt Learning (BEPL)'
+    )
+    parser.add_argument(
+        '--bepl_seam_width',
+        type=int,
+        default=128,
+        help='BEPL seam width (default: 128)'
+    )
+    parser.add_argument(
+        '--bepl_strength',
+        type=float,
+        default=0.2,
+        help='BEPL enhancement strength (default: 0.2)'
     )
 
     args = parser.parse_args()

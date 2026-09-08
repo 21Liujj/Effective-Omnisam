@@ -1,0 +1,22 @@
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{1.08}
+  \caption{不同 Memory Token 预算下的精度与效率权衡。结果来自固定伪标签消融设置。}
+  \label{tab:token_budget}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Token 预算 & Tokens$\downarrow$ & mIoU$\uparrow$ & BFScore$\uparrow$ & Step (s)$\downarrow$ & Mem. Attn. (s)$\downarrow$ \\
+    \midrule
+    100\% & 32768 & 60.26 & 39.59 & 2.4089 & 117.56 \\
+    75\% & 24576 & 60.12 & 39.28 & 2.4614 & 98.62 \\
+    50\% & 16384 & 60.09 & 39.23 & 2.3798 & 79.69 \\
+    25\% & 8192 & 60.10 & 39.29 & 2.2941 & 60.54 \\
+    12.5\%$^{\dagger}$ & 4096 & 60.02 & 39.23 & 2.3153 & 51.92 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.3em}
+  \footnotesize{$^{\dagger}$100\%--25\% 为仅使用稀疏检索的 Token Budget 曲线；12.5\% 为 MTC+SMR 组合端点。}
+\end{table}

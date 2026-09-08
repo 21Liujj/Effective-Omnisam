@@ -1,0 +1,297 @@
+\begin{thebibliography}{10}
+
+\bibitem{bolya2023tome}
+Daniel Bolya, Cheng-Yang Fu, Xiaoliang Dai, Peizhao Zhang, Christoph
+  Feichtenhofer, and Judy Hoffman.
+\newblock Token merging: Your {ViT} but faster.
+\newblock In {\em International Conference on Learning Representations}, 2023.
+
+\bibitem{chen2021crossvit}
+Chun-Fu Chen, Quanfu Fan, and Rameswar Panda.
+\newblock Crossvit: Cross-attention multi-scale vision transformer for image
+  classification.
+\newblock {\em ICCV}, 2021.
+
+\bibitem{chen2017deeplab}
+Liang-Chieh Chen, George Papandreou, Iasonas Kokkinos, Kevin Murphy, and Alan~L
+  Yuille.
+\newblock Deeplab: Semantic image segmentation with deep convolutional nets,
+  atrous convolution, and fully connected crfs.
+\newblock 2017.
+
+\bibitem{cheng2022masked}
+Bowen Cheng, Ishan Misra, Alexander~G Schwing, Alexander Kirillov, and Rohit
+  Girdhar.
+\newblock Masked-attention mask transformer for universal image segmentation.
+\newblock {\em CVPR}, 2022.
+
+\bibitem{child2019generating}
+Rewon Child, Scott Gray, Alec Radford, and Ilya Sutskever.
+\newblock Generating long sequences with sparse transformers.
+\newblock {\em arXiv preprint arXiv:1904.10509}, 2019.
+
+\bibitem{cordts2016cityscapes}
+Marius Cordts, Mohamed Omran, Sebastian Ramos, Timo Rehfeld, Markus Enzweiler,
+  Rodrigo Benenson, Uwe Franke, Stefan Roth, and Bernt Schiele.
+\newblock The {Cityscapes} dataset for semantic urban scene understanding.
+\newblock In {\em Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition}, 2016.
+
+\bibitem{csurka2013good}
+Gabriela Csurka, Diane Larlus, and Florent Perronnin.
+\newblock What is a good evaluation measure for semantic segmentation?
+\newblock {\em BMVC}, 2013.
+
+\bibitem{dai2017deformable}
+Jifeng Dai, Haozhi Qi, Yuwen Xiong, Yi~Li, Guodong Zhang, Han Hu, and Yichen
+  Wei.
+\newblock Deformable convolutional networks.
+\newblock In {\em ICCV}, 2017.
+
+\bibitem{dosovitskiy2020image}
+Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn,
+  Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg
+  Heigold, Sylvain Gelly, et~al.
+\newblock An image is worth 16x16 words: Transformers for image recognition at
+  scale.
+\newblock 2021.
+
+\bibitem{fan2021multiscale}
+Haoqi Fan, Bo~Xiong, Karttikeya Mangalam, Yanghao Li, Zhicheng Yan, Jitendra
+  Malik, and Christoph Feichtenhofer.
+\newblock Multiscale vision transformers.
+\newblock {\em ICCV}, 2021.
+
+\bibitem{he2017mask}
+Kaiming He, Georgia Gkioxari, Piotr Doll{\'a}r, and Ross Girshick.
+\newblock Mask r-cnn.
+\newblock In {\em Proceedings of the IEEE international conference on computer
+  vision}, pages 2961--2969, 2017.
+
+\bibitem{hoyer2022daformer}
+Lukas Hoyer, Dengxin Dai, and Luc Van~Gool.
+\newblock {DAFormer}: Improving network architectures and training strategies
+  for domain-adaptive semantic segmentation.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, 2022.
+
+\bibitem{hoyer2022hrda}
+Lukas Hoyer, Dengxin Dai, and Luc Van~Gool.
+\newblock {HRDA}: Context-aware high-resolution domain-adaptive semantic
+  segmentation.
+\newblock In {\em Proceedings of the European Conference on Computer Vision},
+  pages 372--391, 2022.
+
+\bibitem{hoyer2023mic}
+Lukas Hoyer, Dengxin Dai, Haoran Wang, and Luc Van~Gool.
+\newblock {MIC}: Masked image consistency for context-enhanced domain
+  adaptation.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, 2023.
+
+\bibitem{katharopoulos2020transformers}
+Angelos Katharopoulos, Apoorv Vyas, Nikolaos Pappas, and Francois Fleuret.
+\newblock Transformers are rnns: Fast autoregressive transformers with linear
+  attention.
+\newblock In {\em ICML}, 2020.
+
+\bibitem{kirillov2023segment}
+Alexander Kirillov, Eric Mintun, Nikhila Ravi, Hanzi Mao, Chloe Rolland, Laura
+  Gustafson, Tete Xiao, Spencer Whitehead, Alexander~C. Berg, Wan-Yen Lo, Piotr
+  Doll{\'a}r, and Ross Girshick.
+\newblock Segment anything.
+\newblock In {\em Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, 2023.
+
+\bibitem{liu2021swin}
+Ze~Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and
+  Baining Guo.
+\newblock Swin transformer: Hierarchical vision transformer using shifted
+  windows.
+\newblock In {\em ICCV}, 2021.
+
+\bibitem{lu2023tokensharing}
+Chenyang Lu, Daan de~Geus, and Gijs Dubbelman.
+\newblock Content-aware token sharing for efficient semantic segmentation with
+  vision transformers.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 23631--23640, 2023.
+
+\bibitem{ma2021densepass}
+Chaoxiang Ma, Jiaming Zhang, Kailun Yang, Alina Roitberg, and Rainer
+  Stiefelhagen.
+\newblock {DensePASS}: Dense panoramic semantic segmentation via unsupervised
+  domain adaptation with attention-augmented context exchange.
+\newblock In {\em 2021 IEEE International Intelligent Transportation Systems
+  Conference (ITSC)}, 2021.
+
+\bibitem{opencv_fisheye}
+{OpenCV}.
+\newblock Opencv fisheye camera model.
+\newblock OpenCV Documentation, 2024.
+
+\bibitem{rao2021dynamicvit}
+Yongming Rao, Wenliang Zhao, Benlin Liu, Jiwen Lu, Jie Zhou, and Cho-Jui Hsieh.
+\newblock {DynamicViT}: Efficient vision transformers with dynamic token
+  sparsification.
+\newblock In {\em Advances in Neural Information Processing Systems}, 2021.
+
+\bibitem{ravi2025sam2}
+Nikhila Ravi, Valentin Gabeur, Yuan-Ting Hu, Ronghang Hu, Chaitanya Ryali,
+  Tengyu Ma, Haitham Khedr, Roman R{\"a}dle, Chloe Rolland, Laura Gustafson,
+  Eric Mintun, Junting Pan, Kalyan~Vasudev Alwala, Nicolas Carion, Chao-Yuan
+  Wu, Ross Girshick, Piotr Doll{\'a}r, and Christoph Feichtenhofer.
+\newblock {SAM 2}: Segment anything in images and videos.
+\newblock In {\em International Conference on Learning Representations}, 2025.
+
+\bibitem{strudel2021segmenter}
+Robin Strudel, Ricardo Garcia, Ivan Laptev, and Cordelia Schmid.
+\newblock Segmenter: Transformer for semantic segmentation.
+\newblock In {\em ICCV}, 2021.
+
+\bibitem{su2017learning}
+Yu-Chuan Su and Kristen Grauman.
+\newblock Learning spherical convolution for fast feature extraction from
+  equirectangular images.
+\newblock In {\em CVPR}, 2017.
+
+\bibitem{tranheden2021dacs}
+Wilhelm Tranheden, Viktor Olsson, Juliano Pinto, and Lennart Svensson.
+\newblock Dacs: Domain adaptation via cross-domain mixed sampling.
+\newblock In {\em WACV}, 2021.
+
+\bibitem{tsai2018learning}
+Yi-Hsuan Tsai, Wei-Chih Hung, Samuel Schulter, Kihyuk Sohn, Ming-Hsuan Yang,
+  and Manmohan Chandraker.
+\newblock Learning to adapt structured output space for semantic segmentation.
+\newblock In {\em CVPR}, 2018.
+
+\bibitem{tsai2018adaptsegnet}
+Yi-Hsuan Tsai, Wei-Chih Hung, Samuel Schulter, Kihyuk Sohn, Ming-Hsuan Yang,
+  and Manmohan Chandraker.
+\newblock Learning to adapt structured output space for semantic segmentation.
+\newblock In {\em Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition}, 2018.
+
+\bibitem{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
+\newblock Attention is all you need.
+\newblock {\em NeurIPS}, 2017.
+
+\bibitem{vu2019advent}
+Tuan-Hung Vu, Himalaya Jain, Maxime Bucher, Matthieu Cord, and Patrick Perez.
+\newblock Advent: Adversarial entropy minimization for domain adaptation in
+  semantic segmentation.
+\newblock In {\em CVPR}, 2019.
+
+\bibitem{wang2021pyramid}
+Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan, Kaitao Song, Ding Liang, Tong
+  Lu, Ping Luo, and Ling Shao.
+\newblock Pyramid vision transformer: A versatile backbone for dense prediction
+  without convolutions.
+\newblock In {\em ICCV}, 2021.
+
+\bibitem{xie2021segformer}
+Enze Xie, Wenhai Wang, Zhiding Yu, Anima Anandkumar, Jose~M Alvarez, and Ping
+  Luo.
+\newblock Segformer: Simple and efficient design for semantic segmentation with
+  transformers.
+\newblock {\em NeurIPS}, 2021.
+
+\bibitem{yang2021omnirange}
+Kailun Yang, Jiaming Zhang, Simon Rei{\ss}, Xinxin Hu, and Rainer Stiefelhagen.
+\newblock Capturing omni-range context for omnidirectional segmentation.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, 2021.
+
+\bibitem{yang2023panoswin}
+Zhishuai Yang et~al.
+\newblock Panoswin: a pano-style swin transformer for panorama understanding.
+\newblock In {\em CVPR}, 2023.
+
+\bibitem{yuan2021tokens}
+Li~Yuan, Yunpeng Chen, Tao Wang, Weihao Yu, Yujun Shi, Zi-Hang Jiang,
+  Francis~EH Tay, Jiashi Feng, and Shuicheng Yan.
+\newblock Tokens-to-token vit: Training vision transformers from scratch on
+  imagenet.
+\newblock In {\em ICCV}, 2021.
+
+\bibitem{zhang2022trans4pass}
+Jiaming Zhang et~al.
+\newblock Trans4pass: Transformer-based panoramic semantic segmentation.
+\newblock In {\em CVPR}, 2022.
+
+\bibitem{zhang2021prototypical}
+Pan Zhang, Bo~Zhang, Ting Zhang, Dong Chen, Fangyun Wang, and Lu~Yuan Wang.
+\newblock Prototypical pseudo label denoising and target structure learning for
+  domain adaptive semantic segmentation.
+\newblock In {\em CVPR}, 2021.
+
+\bibitem{zhang2021rest}
+Qinglong Zhang and Yubin Yang.
+\newblock Rest: An efficient transformer for visual recognition.
+\newblock In {\em NeurIPS}, 2021.
+
+\bibitem{zhang2024goodsam}
+Weiming Zhang, Yexin Liu, Xu~Zheng, and Lin Wang.
+\newblock {GoodSAM}: Bridging domain and capacity gaps via segment anything
+  model for distortion-aware panoramic semantic segmentation.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, 2024.
+
+\bibitem{zhao2017pyramid}
+Hengshuang Zhao, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia.
+\newblock Pyramid scene parsing network.
+\newblock In {\em CVPR}, 2017.
+
+\bibitem{zheng2023datr}
+Xu~Zheng, Tianbo Pan, Yunhao Luo, and Lin Wang.
+\newblock Look at the neighbor: Distortion-aware unsupervised domain adaptation
+  for panoramic semantic segmentation.
+\newblock In {\em Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, 2023.
+
+\bibitem{zheng2024sfuda360}
+Xu~Zheng, Pengyuan Zhou, Athanasios~V. Vasilakos, and Lin Wang.
+\newblock Semantics, distortion, and style matter: Towards source-free {UDA}
+  for panoramic segmentation.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, 2024.
+
+\bibitem{zheng2025sfuda360pp}
+Xu~Zheng, Pengyuan Zhou, Athanasios~V. Vasilakos, and Lin Wang.
+\newblock {360SFUDA++}: Towards source-free {UDA} for panoramic segmentation by
+  learning reliable category prototypes.
+\newblock {\em IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  47(2):1190--1204, 2025.
+
+\bibitem{zheng2023dppass}
+Xu~Zheng, Jinjing Zhu, Yexin Liu, Zidong Cao, Chong Fu, and Lin Wang.
+\newblock Both style and distortion matter: Dual-path unsupervised domain
+  adaptation for panoramic semantic segmentation.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, 2023.
+
+\bibitem{zhong2025omnisam}
+Ding Zhong, Xu~Zheng, Chenfei Liao, Yuanhuiyi Lyu, Jialei Chen, Shengyang Wu,
+  Linfeng Zhang, and Xuming Hu.
+\newblock {OmniSAM}: Omnidirectional segment anything model for {UDA} in
+  panoramic semantic segmentation.
+\newblock In {\em Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, 2025.
+
+\bibitem{zou2018cbst}
+Yang Zou, Zhiding Yu, B.~V. K.~Vijaya Kumar, and Jinsong Wang.
+\newblock Unsupervised domain adaptation for semantic segmentation via
+  class-balanced self-training.
+\newblock In {\em Proceedings of the European Conference on Computer Vision},
+  2018.
+
+\bibitem{zou2018unsupervised}
+Yang Zou, Zhiding Yu, BVK~Vijaya Kumar, and Jinsong Wang.
+\newblock Unsupervised domain adaptation for semantic segmentation via
+  class-balanced self-training.
+\newblock In {\em ECCV}, 2018.
+
+\end{thebibliography}

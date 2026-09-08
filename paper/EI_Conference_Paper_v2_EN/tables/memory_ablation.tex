@@ -1,0 +1,20 @@
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.08}
+  \caption{Memory-efficient module comparison under fixed pseudo-label ablation setting. This experiment analyzes Memory Tokens and Memory Attention Time, not as full protocol main results.}
+  \label{tab:memory_ablation}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Method & Memory Tokens$\downarrow$ & mIoU$\uparrow$ & BFScore$\uparrow$ & Mem. Attn. (s)$\downarrow$ \\
+    \midrule
+    OmniSAM & 32768 & 60.26 & 39.59 & 117.48 \\
+    OmniSAM + Confidence Mask & 32768 & 60.26 & 39.59 & 117.56 \\
+    OmniSAM + Confidence Mask + MTC & 8192 & 60.12 & 39.23 & 61.00 \\
+    OmniSAM + Confidence Mask + SMR & 16384 & 60.09 & 39.23 & 79.69 \\
+    OmniSAM + MTC+SMR & 4096 & 60.02 & 39.23 & 52.38 \\
+    OmniSAM + Confidence Mask + MTC+SMR & 4096 & 60.02 & 39.23 & 51.92 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

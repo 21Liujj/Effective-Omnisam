@@ -1,0 +1,20 @@
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.08}
+  \caption{固定伪标签消融设置下的 memory-efficient 模块比较。该实验分析 Memory Tokens 与 Memory Attention Time，不作为 full protocol 主结果。}
+  \label{tab:memory_ablation}
+  \begin{tabular}{lrrrr}
+    \toprule
+    方法 & Memory Tokens$\downarrow$ & mIoU$\uparrow$ & BFScore$\uparrow$ & Mem. Attn. (s)$\downarrow$ \\
+    \midrule
+    OmniSAM & 32768 & 60.26 & 39.59 & 117.48 \\
+    OmniSAM + Confidence Mask & 32768 & 60.26 & 39.59 & 117.56 \\
+    OmniSAM + Confidence Mask + MTC & 8192 & 60.12 & 39.23 & 61.00 \\
+    OmniSAM + Confidence Mask + SMR & 16384 & 60.09 & 39.23 & 79.69 \\
+    OmniSAM + MTC+SMR & 4096 & 60.02 & 39.23 & 52.38 \\
+    OmniSAM + Confidence Mask + MTC+SMR & 4096 & 60.02 & 39.23 & 51.92 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

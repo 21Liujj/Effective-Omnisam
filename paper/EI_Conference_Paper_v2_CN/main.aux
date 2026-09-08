@@ -1,0 +1,169 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand*\HyPL@Entry[1]{}
+\citation{opencv_fisheye}
+\citation{ravi2025sam2}
+\citation{zhong2025omnisam}
+\HyPL@Entry{0<</S/D>>}
+\@writefile{toc}{\contentsline {section}{\numberline {1}引言}{1}{section.1}\protected@file@percent }
+\citation{ma2021densepass}
+\citation{yang2021omnirange}
+\citation{su2017learning}
+\citation{su2017learning}
+\citation{dai2017deformable}
+\citation{dosovitskiy2020image}
+\citation{liu2021swin}
+\citation{zhang2022trans4pass}
+\citation{yang2023panoswin}
+\citation{wang2021pyramid}
+\citation{xie2021segformer}
+\citation{strudel2021segmenter}
+\citation{chen2021crossvit}
+\citation{ma2021densepass}
+\citation{cordts2016cityscapes}
+\citation{tsai2018learning}
+\citation{zou2018unsupervised}
+\@writefile{toc}{\contentsline {section}{\numberline {2}相关工作}{2}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}全景图像语义分割}{2}{subsection.2.1}\protected@file@percent }
+\citation{tsai2018adaptsegnet}
+\citation{vu2019advent}
+\citation{zou2018cbst}
+\citation{zhang2021prototypical}
+\citation{tranheden2021dacs}
+\citation{hoyer2022daformer}
+\citation{hoyer2022hrda}
+\citation{hoyer2023mic}
+\citation{zheng2023dppass}
+\citation{zheng2023datr}
+\citation{zhang2024goodsam}
+\citation{zheng2024sfuda360}
+\citation{zheng2025sfuda360pp}
+\citation{zhong2025omnisam}
+\citation{he2017mask}
+\citation{cheng2022masked}
+\citation{chen2017deeplab}
+\citation{zhao2017pyramid}
+\citation{kirillov2023segment}
+\citation{ravi2025sam2}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}无监督域适应}{3}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}视觉大模型与记忆机制}{3}{subsection.2.3}\protected@file@percent }
+\citation{vaswani2017attention}
+\citation{vaswani2017attention}
+\citation{child2019generating}
+\citation{liu2021swin}
+\citation{katharopoulos2020transformers}
+\citation{rao2021dynamicvit}
+\citation{bolya2023tome}
+\citation{zhang2021rest}
+\citation{yuan2021tokens}
+\citation{lu2023tokensharing}
+\citation{fan2021multiscale}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}高效注意力机制}{4}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}方法}{5}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}问题定义与基线方法}{5}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}记忆Token压缩(MTC)}{5}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}稀疏记忆检索(SMR)}{5}{subsection.3.3}\protected@file@percent }
+\citation{ma2021densepass}
+\citation{cordts2016cityscapes}
+\citation{chen2017deeplab}
+\citation{csurka2013good}
+\citation{zhong2025omnisam}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}无缝循环记忆(SCM)}{6}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}整体训练流程}{6}{subsection.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}实验}{6}{section.4}\protected@file@percent }
+\newlabel{sec:experiments}{{4}{6}{实验}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}实验设置与数据集}{6}{subsection.4.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces DensePASS数据集主要结果对比（500步训练）。}}{7}{table.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:main_results}{{1}{7}{DensePASS数据集主要结果对比（500步训练）。}{table.caption.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces 多指标性能变化折线图。横轴为优化阶段（Baseline → +MTC → +MTC+SMR → +MTC+SMR+SCM），纵轴为各项指标数值。完整方法（红色）在所有指标上最终都优于基线（蓝色）。}}{7}{figure.caption.2}\protected@file@percent }
+\newlabel{fig:metrics_line_chart}{{1}{7}{多指标性能变化折线图。横轴为优化阶段（Baseline → +MTC → +MTC+SMR → +MTC+SMR+SCM），纵轴为各项指标数值。完整方法（红色）在所有指标上最终都优于基线（蓝色）。}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}主要结果与端到端性能分析}{7}{subsection.4.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces 端到端时间与性能分析（500步训练 + 100张验证）。}}{8}{table.caption.3}\protected@file@percent }
+\newlabel{tab:end_to_end_analysis}{{2}{8}{端到端时间与性能分析（500步训练 + 100张验证）。}{table.caption.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces 端到端流程时间分解甘特图。蓝色表示基线方法，橙色表示优化方法。优化后训练时间大幅缩短，推理时间略有增加，但总时间显著降低。}}{8}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:end_to_end_gantt}{{2}{8}{端到端流程时间分解甘特图。蓝色表示基线方法，橙色表示优化方法。优化后训练时间大幅缩短，推理时间略有增加，但总时间显著降低。}{figure.caption.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}效率分析与资源占用}{8}{subsection.4.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces 训练效率分析。(a) 各部分时间占比，记忆注意力时间显著降低；(b) 累积时间对比，500步节省44.5分钟。}}{9}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:training_breakdown}{{3}{9}{训练效率分析。(a) 各部分时间占比，记忆注意力时间显著降低；(b) 累积时间对比，500步节省44.5分钟。}{figure.caption.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}消融实验}{9}{subsection.4.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces GPU资源占用与计算效率对比。}}{10}{table.caption.6}\protected@file@percent }
+\newlabel{tab:gpu_resources}{{3}{10}{GPU资源占用与计算效率对比。}{table.caption.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces GPU资源利用折线图（包含SCM）。左Y轴为显存峰值（GB），右Y轴为Memory Tokens数量。完整优化方法在资源占用和精度上达到最佳平衡。}}{10}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:gpu_resources_with_scm}{{4}{10}{GPU资源利用折线图（包含SCM）。左Y轴为显存峰值（GB），右Y轴为Memory Tokens数量。完整优化方法在资源占用和精度上达到最佳平衡。}{figure.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Token预算与注意力时间关系折线图（包含SCM）。横轴为Token预算比例（\%），左Y轴为注意力时间（秒），右Y轴为mIoU（\%）。虚线表示加入SCM后的精度提升。}}{11}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:token_budget_with_scm}{{5}{11}{Token预算与注意力时间关系折线图（包含SCM）。横轴为Token预算比例（\%），左Y轴为注意力时间（秒），右Y轴为mIoU（\%）。虚线表示加入SCM后的精度提升。}{figure.caption.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces 各类别IoU柱状图对比。交通标志类别（红框标注）提升最显著（+5.04\%），验证了SCM对边界区域的优化效果。}}{11}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:per_class_comparison}{{6}{11}{各类别IoU柱状图对比。交通标志类别（红框标注）提升最显著（+5.04\%），验证了SCM对边界区域的优化效果。}{figure.caption.10}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}讨论与局限性}{11}{section.5}\protected@file@percent }
+\newlabel{sec:discussion}{{5}{11}{讨论与局限性}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}效率--精度权衡}{11}{subsection.5.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces DensePASS数据集各类别IoU详细对比（单位：\%）。}}{12}{table.caption.9}\protected@file@percent }
+\newlabel{tab:per_class_iou}{{4}{12}{DensePASS数据集各类别IoU详细对比（单位：\%）。}{table.caption.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces 固定伪标签消融设置下的 memory-efficient 模块比较。该实验分析 Memory Tokens 与 Memory Attention Time，不作为 full protocol 主结果。}}{12}{table.caption.13}\protected@file@percent }
+\newlabel{tab:memory_ablation}{{5}{12}{固定伪标签消融设置下的 memory-efficient 模块比较。该实验分析 Memory Tokens 与 Memory Attention Time，不作为 full protocol 主结果。}{table.caption.13}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}局限性}{12}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}后续工作}{12}{subsection.5.3}\protected@file@percent }
+\bibstyle{plain}
+\bibdata{refs}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces 各类别相对基线的IoU改善量。绿色表示提升，红色表示下降。交通标志类别改善最明显。}}{13}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:per_class_improvement}{{7}{13}{各类别相对基线的IoU改善量。绿色表示提升，红色表示下降。交通标志类别改善最明显。}{figure.caption.11}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces 定性分割结果对比。上：原始全景图像；中：基线方法（OmniSAM）；下：完整方法（MTC+SMR+SCM）。红框标注处显示边界连续性的显著改善。}}{13}{figure.caption.12}\protected@file@percent }
+\newlabel{fig:qualitative_comparison}{{8}{13}{定性分割结果对比。上：原始全景图像；中：基线方法（OmniSAM）；下：完整方法（MTC+SMR+SCM）。红框标注处显示边界连续性的显著改善。}{figure.caption.12}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}结论}{13}{section.6}\protected@file@percent }
+\newlabel{sec:conclusion}{{6}{13}{结论}{section.6}{}}
+\bibcite{bolya2023tome}{1}
+\bibcite{chen2021crossvit}{2}
+\bibcite{chen2017deeplab}{3}
+\bibcite{cheng2022masked}{4}
+\bibcite{child2019generating}{5}
+\bibcite{cordts2016cityscapes}{6}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Memory优化的速度-精度权衡。横轴为训练效率（步时间），纵轴为mIoU。不同配置展示了效率收益与精度变化的关系。}}{14}{figure.caption.14}\protected@file@percent }
+\newlabel{fig:speed_accuracy_tradeoff}{{9}{14}{Memory优化的速度-精度权衡。横轴为训练效率（步时间），纵轴为mIoU。不同配置展示了效率收益与精度变化的关系。}{figure.caption.14}{}}
+\bibcite{csurka2013good}{7}
+\bibcite{dai2017deformable}{8}
+\bibcite{dosovitskiy2020image}{9}
+\bibcite{fan2021multiscale}{10}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces 不同 Memory Token 预算下的精度与效率权衡。结果来自固定伪标签消融设置。}}{15}{table.caption.15}\protected@file@percent }
+\newlabel{tab:token_budget}{{6}{15}{不同 Memory Token 预算下的精度与效率权衡。结果来自固定伪标签消融设置。}{table.caption.15}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Token预算与注意力时间关系。100\%-25\%为仅SMR曲线，12.5\%为MTC+SMR组合端点。}}{15}{figure.caption.16}\protected@file@percent }
+\newlabel{fig:token_budget_attention}{{10}{15}{Token预算与注意力时间关系。100\%-25\%为仅SMR曲线，12.5\%为MTC+SMR组合端点。}{figure.caption.16}{}}
+\bibcite{he2017mask}{11}
+\bibcite{hoyer2022daformer}{12}
+\bibcite{hoyer2022hrda}{13}
+\bibcite{hoyer2023mic}{14}
+\bibcite{katharopoulos2020transformers}{15}
+\bibcite{kirillov2023segment}{16}
+\bibcite{liu2021swin}{17}
+\bibcite{lu2023tokensharing}{18}
+\bibcite{ma2021densepass}{19}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces 固定伪标签设置下的辅助伪标签质量消融。结果仅用于探索监督可靠性，不构成本文主要性能结论。}}{16}{table.caption.17}\protected@file@percent }
+\newlabel{tab:pseudo_label_ablation}{{7}{16}{固定伪标签设置下的辅助伪标签质量消融。结果仅用于探索监督可靠性，不构成本文主要性能结论。}{table.caption.17}{}}
+\bibcite{opencv_fisheye}{20}
+\bibcite{rao2021dynamicvit}{21}
+\bibcite{ravi2025sam2}{22}
+\bibcite{strudel2021segmenter}{23}
+\bibcite{su2017learning}{24}
+\bibcite{tranheden2021dacs}{25}
+\bibcite{tsai2018learning}{26}
+\bibcite{tsai2018adaptsegnet}{27}
+\bibcite{vaswani2017attention}{28}
+\bibcite{vu2019advent}{29}
+\bibcite{wang2021pyramid}{30}
+\bibcite{xie2021segformer}{31}
+\bibcite{yang2021omnirange}{32}
+\bibcite{yang2023panoswin}{33}
+\bibcite{yuan2021tokens}{34}
+\bibcite{zhang2022trans4pass}{35}
+\bibcite{zhang2021prototypical}{36}
+\bibcite{zhang2021rest}{37}
+\bibcite{zhang2024goodsam}{38}
+\bibcite{zhao2017pyramid}{39}
+\bibcite{zheng2023datr}{40}
+\bibcite{zheng2024sfuda360}{41}
+\bibcite{zheng2025sfuda360pp}{42}
+\bibcite{zheng2023dppass}{43}
+\bibcite{zhong2025omnisam}{44}
+\bibcite{zou2018cbst}{45}
+\bibcite{zou2018unsupervised}{46}
+\gdef \@abspage@last{19}

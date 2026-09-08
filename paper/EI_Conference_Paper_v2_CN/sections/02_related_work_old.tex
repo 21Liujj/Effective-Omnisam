@@ -1,0 +1,35 @@
+\section{相关工作}
+
+\subsection{全景图像语义分割}
+
+全景图像分割是计算机视觉中的重要任务，在自动驾驶、机器人导航和虚拟现实等领域有广泛应用。全景图像通常采用等距柱状投影(equirectangular projection)表示360°场景，这种投影方式在两极区域会产生严重的几何畸变\cite{su2017learning,coors2018spherenet}。早期方法通过设计专门的网络结构来处理这种畸变：SphereNet\cite{coors2018spherenet}提出球面卷积核，直接在球面坐标系中进行卷积操作；DCN\cite{dai2017deformable}通过可变形卷积学习自适应的感受野来适应畸变特征；Kernel Transformer Networks\cite{su2019kernel}利用核变换显式建模投影变换。
+
+近年来，基于Transformer的方法在全景分割中取得了显著进展。Trans4PASS\cite{zhang2022trans4pass}首次将Vision Transformer引入全景分割，利用自注意力机制建模长距离依赖关系，有效捕获全景图的全局上下文。PanoSwin\cite{yang2023panoswin}在Swin Transformer的基础上设计了全景特定的窗口注意力，通过循环移位窗口处理全景图的周期性边界。PanoFormer\cite{zhang2021panomer}提出了球面位置编码来处理全景图的几何特性。数据集方面，DensePASS\cite{ma2021densepass}提供了大规模的密集标注全景分割数据集，推动了该领域的快速发展。Stanford2D3D\cite{armeni20163d}和Matterport3D\cite{chang2017matterport3d}也为全景场景理解提供了丰富的训练数据。
+
+\subsection{无监督域适应}
+
+无监督域适应(Unsupervised Domain Adaptation, UDA)旨在将模型从有标注的源域迁移到无标注的目标域，减少标注成本。语义分割的域适应尤其具有挑战性，因为需要在像素级别对齐不同域之间的分布差异\cite{hoffman2018cycada,zhang2017curriculum}。
+
+主流的UDA方法可以分为几类。\textbf{对抗训练方法}\cite{tsai2018learning,vu2019advent}通过域判别器使特征分布在域之间不可区分，AdaptSegNet\cite{tsai2018learning}在输出空间进行对抗对齐，ADVENT\cite{vu2019advent}通过熵最小化进一步提升对齐效果。\textbf{自训练方法}\cite{zou2018unsupervised,zou2019confidence}使用模型预测的伪标签进行训练，逐步提升目标域性能。CBST\cite{zou2019confidence}通过类别平衡的伪标签选择避免类别偏差。\textbf{风格迁移方法}\cite{hoffman2018cycada,yang2020fda}将源域图像转换到目标域风格，FDA\cite{yang2020fda}通过傅里叶域适应实现高效的风格迁移。\textbf{混合增强方法}\cite{tranheden2021dacs,hoyer2022daformer}如DACS\cite{tranheden2021dacs}通过源域和目标域的图像混合生成高质量伪标签，DAFormer\cite{hoyer2022daformer}结合Transformer和稀有类采样进一步提升性能。
+
+原型对齐\cite{zhang2021prototypical,wang2020differential}是另一类有效的方法。ProDA\cite{zhang2021prototypical}通过对齐源域和目标域的类别原型减少域偏移，DPAN\cite{wang2020differential}使用差异化原型对齐网络处理类别不平衡问题。最近，基于大模型的方法开始出现，OmniSAM\cite{zhong2025omnisam}首次将SAM2的记忆机制引入全景域适应，但其训练成本较高，限制了实际应用。
+
+\subsection{视觉大模型与记忆机制}
+
+视觉大模型通过大规模预训练在多种视觉任务上展现了强大的泛化能力。Segment Anything Model (SAM)\cite{kirillov2023segment}通过在SA-1B数据集(包含1100万张图像和11亿个掩码)上预训练，实现了零样本分割能力。SAM采用提示编码器-图像编码器-掩码解码器的架构，可以通过点、框或文本提示进行交互式分割\cite{kirillov2023segment}。
+
+SAM2\cite{ravi2024sam2}将SAM扩展到视频域，引入了记忆编码器和记忆注意力机制。记忆机制的核心思想是存储历史帧的特征表示，通过交叉注意力机制使当前帧查询能够访问历史信息，从而提升时序一致性\cite{ravi2024sam2}。然而，随着序列长度增加，记忆Token规模线性增长，导致注意力计算成本急剧上升。对于长序列视频或多窗口全景图，这一问题尤为严重。
+
+记忆机制在其他视觉任务中也得到了广泛应用。Video Object Segmentation中的STM\cite{oh2019video}和AOT\cite{yang2021associating}使用记忆网络跟踪目标，XMem\cite{cheng2022xmem}通过分层记忆管理长期和短期信息。Tracking领域的TransT\cite{chen2021transformer}和ToMP\cite{mayer2022transforming}也采用了类似的记忆-查询机制。然而，这些方法大多未专门优化记忆的计算效率，在处理高分辨率或长序列时面临性能瓶颈\cite{cheng2022xmem,yang2021associating}。
+
+\subsection{高效注意力机制}
+
+降低Transformer计算复杂度是深度学习领域的重要研究方向。标准自注意力的计算复杂度为$O(N^2)$，其中$N$为Token数量，在高分辨率视觉任务中成本高昂\cite{vaswani2017attention}。
+
+\textbf{稀疏注意力方法}\cite{child2019generating,beltagy2020longformer}通过限制注意力范围降低复杂度。Sparse Transformer\cite{child2019generating}使用固定的稀疏模式，Longformer\cite{beltagy2020longformer}结合局部窗口和全局注意力。Swin Transformer\cite{liu2021swin}通过窗口注意力和移位窗口机制实现线性复杂度。BigBird\cite{zaheer2020big}提出随机注意力、窗口注意力和全局注意力的组合模式。
+
+\textbf{线性注意力方法}\cite{katharopoulos2020transformers,choromanski2020rethinking}将注意力机制重新表述为核函数形式，实现$O(N)$复杂度。Performer\cite{choromanski2020rethinking}使用FAVOR+算法近似softmax注意力，Linformer\cite{wang2020linformer}通过低秩分解压缩键值矩阵。
+
+\textbf{Token剪枝方法}\cite{rao2021dynamicvit,liang2022not,bolya2022token}通过动态移除冗余Token降低计算量。DynamicViT\cite{rao2021dynamicvit}预测Token重要性并动态剪枝，EViT\cite{liang2022not}保留类别Token并将剪枝Token的信息融合到保留Token中。Token Merging\cite{bolya2022token}通过合并相似Token减少序列长度。Evo-ViT\cite{xu2022evo}提出渐进式Token剪枝和慢速-快速更新策略。
+
+\textbf{混合方法}结合多种技术实现更好的效率-精度权衡。CoAtNet\cite{dai2021coatnet}结合卷积和注意力的优势，FastViT\cite{vasu2023fastvit}通过重参数化和混合架构提升推理速度。本文借鉴Token剪枝和稀疏注意力的思想，针对记忆注意力机制设计了专门的优化方案：通过空间压缩降低单个记忆的Token数量，通过查询引导的稀疏检索减少参与注意力计算的记忆数量，在保持精度的同时大幅提升训练和推理效率。

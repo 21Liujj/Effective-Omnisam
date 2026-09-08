@@ -1,0 +1,35 @@
+\section{Ablation Study}
+\label{sec:ablation}
+
+\subsection{Memory Module Ablation}
+\input{tables/memory_ablation}
+
+Table~\ref{tab:memory_ablation} adopts a fixed pseudo-label ablation setting, reusing the same pseudo-labels to isolate memory module effects, not replacing the end-to-end main results in Section~\ref{sec:experiments}. OmniSAM + Confidence Mask does not reduce Memory Tokens, and its Memory Attention Time is essentially consistent with OmniSAM, indicating that only changing pseudo-label filtering without reducing attention input cannot obtain computational gains from this module. After separately enabling MTC or SMR on top of Confidence Mask, Memory Tokens and Memory Attention Time decrease synchronously, verifying that both spatial aggregation and content selection can reduce historical memory interaction. The combined configuration further compresses tokens from 32768 to 4096 and reduces attention time to 51.92s, while accompanied by slight mIoU and BFScore costs, reflecting efficiency-accuracy trade-offs.
+
+As shown in Figure~\ref{fig:speed_accuracy_tradeoff}, memory-efficient configurations trade small accuracy changes for training efficiency gains. The points of different modules do not form a monotonic accuracy improvement relationship, further indicating that the main value of MTC and SMR is controlling training cost rather than enhancing segmentation accuracy. This figure is used for module trend analysis and is not part of full protocol main results.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.78\linewidth]{figures/fig_speed_accuracy_tradeoff_miou.png}
+    \caption{Training efficiency vs. mIoU trade-off under fixed pseudo-label ablation setting. Different configurations demonstrate efficiency gains from memory token reduction and corresponding accuracy changes. This figure is not part of full protocol main results.}
+    \label{fig:speed_accuracy_tradeoff}
+\end{figure}
+
+\subsection{Token Budget}
+\input{tables/token_budget_tradeoff}
+
+Table~\ref{tab:token_budget} and Figure~\ref{fig:token_budget_attention} show that Memory Attention Time generally decreases as Token Budget decreases, while mIoU and BFScore only fluctuate within a small range. This trend directly links computational changes to effective memory token count, also indicating that some historical context can be reduced without causing overall prediction collapse. 100\%--25\% constitutes a Token Budget curve using only SMR, for comparing retention ratios of the same sparse retrieval mechanism; 12.5\% / 4096 tokens is the MTC+SMR combination endpoint and cannot be viewed as a natural extension of this curve. Step Time is not strictly monotonic, indicating that costs such as top-k selection, encoding/decoding, and data processing jointly affect single-step time; Memory Attention Time is more suitable for explaining the direct effect of Token Budget.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.78\linewidth]{figures/fig_token_budget_attention_time.png}
+    \caption{Relationship between Token Budget and Memory Attention Time under fixed pseudo-label ablation setting. 100\%--25\% is the curve using only SMR, with 12.5\% being the MTC+SMR combination endpoint.}
+    \label{fig:token_budget_attention}
+\end{figure}
+
+\subsection{Auxiliary PQR Ablation}
+\input{tables/pseudo_label_ablation}
+
+In Table~\ref{tab:pseudo_label_ablation}, mIoU for Identity, class-balanced filtering, and prototype-guided gating are 60.02, 60.07, and 60.05, respectively. Class-balanced filtering only brings $+0.05$, indicating that adjusting class coverage may slightly improve target domain supervision, but the change magnitude is insufficient to support strong conclusions; adding prototype gating does not further improve. One possible reason is that additional filtering reduces effective supervision, or batch-level prototypes remain unstable for rare classes and domain shift. Since these interpretations have not yet been verified by more diagnostics, PQR serves only as auxiliary exploration of pseudo-label reliability and does not constitute the main contribution.
+
+Synthesizing ablation results, MTC+SMR has the most direct evidence for reducing memory attention overhead, but lower token budgets increase risks of fine-grained semantic and boundary losses. Module ablation explains the source of efficiency gains, token budget defines compression strength, and PQR only supplements supervision reliability analysis; the experimental roles of the three cannot be exchanged. Training efficiency and segmentation quality need to be jointly balanced.

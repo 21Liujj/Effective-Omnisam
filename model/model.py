@@ -1,7 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from sam_lora_image_encoder import LoRA_Sam
+try:
+    from sam.sam_lora_image_encoder import LoRA_Sam
+except ModuleNotFoundError:
+    from sam_lora_image_encoder import LoRA_Sam
 from model.modules.decoder_sam import SegFormerHead, SegFormerHead_adaption
 from model import MemoryBank
 from model.text_align import (
@@ -13,6 +16,10 @@ from model.text_align import (
 )
 from model.text_semantic import LightweightLanguageAdapter
 from model.depth_adapter import LightDepthAdapter
+# NEW: Import SG-DRF modules
+from model.modules.semantic_density_estimator import SemanticDensityEstimator
+from model.modules.dynamic_fsmc import DynamicFSMC
+from model.modules.dynamic_scm import DynamicSCM
 
 class OmniSAM(nn.Module):
     def __init__(self, sam_model, num_classes, num_maskmem):
@@ -112,6 +119,17 @@ class OmniSAM_adapt(nn.Module):
         text_ground_return_attn: bool = True,
         text_ground_attn_temperature: float = 1.0,
         depth_adapter_cfg: dict | None = None,
+        # NEW: SG-DRF parameters
+        enable_sgdrf: bool = False,
+        sgdrf_backbone_channels: int = 256,
+        sgdrf_enable_dynamic_fsmc: bool = True,
+        sgdrf_enable_dynamic_scm: bool = True,
+        sgdrf_fsmc_min_ratio: float = 4.0,
+        sgdrf_fsmc_max_ratio: float = 16.0,
+        sgdrf_scm_base_pad: int = 1024,
+        sgdrf_scm_min_pad: int = 512,
+        sgdrf_scm_max_pad: int = 1536,
+        sgdrf_training_stage: str = "joint",  # 'cold_start' or 'joint'
     ):
         super().__init__()
         self.sam_model = sam_model
@@ -218,20 +236,179 @@ class OmniSAM_adapt(nn.Module):
                     adapter_scale=float(adapter_scale),
                 )
 
-    def forward(self, frame_idx, x, mem_type="source", return_aux: bool = False, depth=None, historical_pseudo_labels=None):
+        # ========== NEW: Initialize SG-DRF modules ==========
+        self.enable_sgdrf = bool(enable_sgdrf)
+        self.sgdrf_training_stage = str(sgdrf_training_stage)
+        self.density_estimator: SemanticDensityEstimator | None = None
+        self.dynamic_fsmc: DynamicFSMC | None = None
+        self.dynamic_scm: DynamicSCM | None = None
+
+        if self.enable_sgdrf:
+            # Density Estimator (always needed for SG-DRF)
+            self.density_estimator = SemanticDensityEstimator(
+                in_channels=int(sgdrf_backbone_channels)
+            )
+
+            # Dynamic FSMC (optional)
+            if bool(sgdrf_enable_dynamic_fsmc):
+                self.dynamic_fsmc = DynamicFSMC(
+                    in_channels=int(sgdrf_backbone_channels),
+                    min_ratio=float(sgdrf_fsmc_min_ratio),
+                    max_ratio=float(sgdrf_fsmc_max_ratio)
+                )
+
+            # Dynamic SCM (optional)
+            if bool(sgdrf_enable_dynamic_scm):
+                self.dynamic_scm = DynamicSCM(
+                    base_pad_width=int(sgdrf_scm_base_pad),
+                    min_pad_width=int(sgdrf_scm_min_pad),
+                    max_pad_width=int(sgdrf_scm_max_pad)
+                )
+
+            # Apply cold-start freezing if needed
+            self._apply_sgdrf_cold_start_freeze()
+
+            print(f"[OmniSAM] SG-DRF enabled - Stage: {self.sgdrf_training_stage}, "
+                  f"Dynamic FSMC: {sgdrf_enable_dynamic_fsmc}, "
+                  f"Dynamic SCM: {sgdrf_enable_dynamic_scm}")
+
+    def _apply_sgdrf_cold_start_freeze(self):
+        """
+        Apply parameter freezing for SG-DRF cold-start stage
+        """
+        if self.sgdrf_training_stage == 'cold_start' and self.density_estimator is not None:
+            # Keep baseline segmentation trainable; defer random routing branches.
+            for param in self.parameters():
+                param.requires_grad = True
+            for module in (self.dynamic_fsmc, self.dynamic_scm):
+                if module is not None:
+                    for param in module.parameters():
+                        param.requires_grad = False
+                    module.eval()
+            print("[SG-DRF] Cold-start mode: baseline path + density estimator; FSMC/SCM bypassed")
+
+    def set_sgdrf_training_stage(self, stage: str):
+        """
+        Switch SG-DRF training stage
+
+        Args:
+            stage: 'cold_start' or 'joint'
+        """
+        if not self.enable_sgdrf:
+            print("[SG-DRF] Warning: SG-DRF is not enabled")
+            return
+
+        assert stage in ['cold_start', 'joint'], \
+            f"Invalid stage: {stage}. Must be 'cold_start' or 'joint'"
+
+        self.sgdrf_training_stage = stage
+
+        if stage == 'cold_start':
+            # Keep baseline segmentation trainable and defer dynamic branches.
+            for param in self.parameters():
+                param.requires_grad = True
+            for module in (self.dynamic_fsmc, self.dynamic_scm):
+                if module is not None:
+                    for param in module.parameters():
+                        param.requires_grad = False
+                    module.eval()
+            print("[SG-DRF] Switched to cold-start mode (baseline-safe forward)")
+
+        elif stage == 'joint':
+            # Unfreeze all parameters and restore training mode for dynamic branches.
+            for param in self.parameters():
+                param.requires_grad = True
+            for module in (self.dynamic_fsmc, self.dynamic_scm):
+                if module is not None:
+                    module.train()
+            # Keep density estimator trainable to adapt to evolving features
+            if self.density_estimator is not None:
+                self.density_estimator.train()
+            print("[SG-DRF] Switched to joint training mode")
+
+    def forward(self, frame_idx, x, mem_type="source", return_aux: bool = False, depth=None, historical_pseudo_labels=None, return_sgdrf_aux: bool = False):
         _, _, height, width = x.shape
         backbone_out = self.encoder(x)
         current_vision_feats = backbone_out['vision_features']
         current_vision_pos_embeds = backbone_out['vision_pos_enc'][-1]
         feat = backbone_out['backbone_fpn']
-        feat[-1] = self.memory_bank(
-                    frame_idx,
-                    current_vision_feats,
-                    current_vision_pos_embeds,
-                    mem_type=mem_type,
-                    num_obj_ptr_tokens=0,
-                    historical_pseudo_labels=historical_pseudo_labels,
-                )
+
+        # ========== NEW: SG-DRF Processing ==========
+        density_map = None
+        sgdrf_stats = {}
+
+        if self.enable_sgdrf and self.density_estimator is not None:
+            # Step 1: Estimate semantic density from current_vision_feats
+            density_input = (current_vision_feats.detach()
+                             if self.sgdrf_training_stage == 'cold_start'
+                             else current_vision_feats)
+            density_map = self.density_estimator(density_input)
+
+            sgdrf_stats['density_mean'] = density_map.mean().item()
+            sgdrf_stats['density_std'] = density_map.std().item()
+            sgdrf_stats['density_min'] = density_map.min().item()
+            sgdrf_stats['density_max'] = density_map.max().item()
+            sgdrf_stats['initial_feats_shape'] = list(current_vision_feats.shape)
+            sgdrf_stats['initial_pos_shape'] = list(current_vision_pos_embeds.shape)
+
+            # Step 2: Apply Dynamic FSMC compression (optional)
+            if self.sgdrf_training_stage != 'cold_start' and self.dynamic_fsmc is not None:
+                feat_to_compress = current_vision_feats
+                compressed_feat, fsmc_stats = self.dynamic_fsmc(feat_to_compress, density_map)
+                
+                # SHAPE FIX: Verify FSMC output shape matches input
+                if compressed_feat.shape != feat_to_compress.shape:
+                    import warnings
+                    warnings.warn(f"FSMC shape mismatch! Input: {feat_to_compress.shape}, Output: {compressed_feat.shape}")
+                    if compressed_feat.shape[-2:] != feat_to_compress.shape[-2:]:
+                        compressed_feat = F.interpolate(compressed_feat, size=feat_to_compress.shape[-2:], mode='bilinear', align_corners=False)
+                
+                current_vision_feats = compressed_feat
+                sgdrf_stats['fsmc'] = fsmc_stats
+                sgdrf_stats['after_fsmc_feats_shape'] = list(current_vision_feats.shape)
+
+            # SHAPE FIX: Validate and align position embeddings
+            if current_vision_feats.shape[-2:] != current_vision_pos_embeds.shape[-2:]:
+                print(f"[SG-DRF] Aligning pos_embeds: feats {current_vision_feats.shape}, pos {current_vision_pos_embeds.shape}")
+                current_vision_pos_embeds = F.interpolate(current_vision_pos_embeds, size=current_vision_feats.shape[-2:], mode='bilinear', align_corners=False)
+                sgdrf_stats['pos_embeds_realigned'] = True
+
+            # Step 3: Apply Dynamic SCM padding (optional)
+            if self.sgdrf_training_stage != 'cold_start' and self.dynamic_scm is not None:
+                # SHAPE FIX: Assert alignment before padding
+                assert current_vision_feats.shape[-2:] == current_vision_pos_embeds.shape[-2:], f"Shape mismatch before SCM: feats {current_vision_feats.shape}, pos {current_vision_pos_embeds.shape}"
+                
+                padded_feats, pad_width = self.dynamic_scm(current_vision_feats, density_map, return_pad_width=True)
+                padded_pos_embeds = self.dynamic_scm.pad_tensor(current_vision_pos_embeds, pad_width)
+                
+                # SHAPE FIX: Final verification before memory_bank
+                assert padded_feats.shape[-2:] == padded_pos_embeds.shape[-2:], f"Shape mismatch after SCM padding: feats {padded_feats.shape}, pos {padded_pos_embeds.shape}"
+                
+                sgdrf_stats['padded_feats_shape'] = list(padded_feats.shape)
+                sgdrf_stats['padded_pos_shape'] = list(padded_pos_embeds.shape)
+                
+                feat[-1] = self.memory_bank(frame_idx, padded_feats, padded_pos_embeds, mem_type=mem_type, num_obj_ptr_tokens=0, historical_pseudo_labels=historical_pseudo_labels)
+                feat[-1] = self.dynamic_scm.remove_circular_padding(feat[-1], pad_width)
+                sgdrf_stats['scm_pad_width'] = pad_width
+            else:
+                # SHAPE FIX: Ensure alignment even without SCM
+                if current_vision_feats.shape[-2:] != current_vision_pos_embeds.shape[-2:]:
+                    print(f"[SG-DRF] Final alignment: feats {current_vision_feats.shape}, pos {current_vision_pos_embeds.shape}")
+                    current_vision_pos_embeds = F.interpolate(current_vision_pos_embeds, size=current_vision_feats.shape[-2:], mode='bilinear', align_corners=False)
+                
+                feat[-1] = self.memory_bank(frame_idx, current_vision_feats, current_vision_pos_embeds, mem_type=mem_type, num_obj_ptr_tokens=0, historical_pseudo_labels=historical_pseudo_labels)
+        else:
+            # Original flow without SG-DRF
+            feat[-1] = self.memory_bank(
+                        frame_idx,
+                        current_vision_feats,
+                        current_vision_pos_embeds,
+                        mem_type=mem_type,
+                        num_obj_ptr_tokens=0,
+                        historical_pseudo_labels=historical_pseudo_labels,
+                    )
+
+        # ========== Continue with original decoder flow ==========
         x, feat_de = self.decoder(feat)
         feat_de_visual = feat_de
         if self.depth_adapter is not None:
@@ -295,6 +472,7 @@ class OmniSAM_adapt(nn.Module):
             text_scale = float(self.txt_head.text_scale.detach().item())
         else:
             pred = F.interpolate(x, size=(height, width), mode='bilinear', align_corners=False) if fusion_type in {"image_to_text_cross_attn", "hybrid"} else l_vis
+
         # Encode new memory
         if self.num_maskmem > 0:
             output = torch.argmax(pred, 1)
@@ -304,6 +482,54 @@ class OmniSAM_adapt(nn.Module):
                 probs = torch.softmax(pred, dim=1)  # [B, K, H, W]
                 entropy = -(probs * torch.log(probs + 1e-8)).sum(dim=1)  # [B, H, W]
             self.memory_bank._encode_new_memory(frame_idx, current_vision_feats, mask_for_mem, mem_type, uncertainty_map=entropy)
+
+        # ========== Return results with optional SG-DRF auxiliary outputs ==========
+        if return_sgdrf_aux and self.enable_sgdrf:
+            # Upsample density map to original resolution for visualization/loss computation
+            if density_map is not None:
+                density_map_full = F.interpolate(
+                    density_map, size=(height, width),
+                    mode='bilinear', align_corners=False
+                )
+            else:
+                density_map_full = None
+
+            if return_aux and l_txt is not None:
+                return pred, feat, feat_de, TextAlignAux(
+                    l_vis=l_vis,
+                    l_txt=l_txt,
+                    l_ground=l_ground,
+                    fusion_alpha=fusion_alpha,
+                    text_scale=text_scale,
+                    cross_beta=float(cross_aux.get("beta", 0.0)),
+                    cross_attn_mean=float(cross_aux.get("attn_mean", 0.0)),
+                    cross_attn_std=float(cross_aux.get("attn_std", 0.0)),
+                    cross_attn_entropy=float(cross_aux.get("attn_entropy", 0.0)),
+                    cross_attn_max_mean=float(cross_aux.get("text_attn_max", 0.0)),
+                    feature_delta_mean=float(cross_aux.get("feature_delta_mean", 0.0)),
+                    feature_delta_norm=float(cross_aux.get("feature_delta_norm", 0.0)),
+                    feature_delta_ratio=float(cross_aux.get("feature_delta_ratio", 0.0)),
+                    fused_feature_mean=float(cross_aux.get("fused_feature_mean", 0.0)),
+                    fused_feature_std=float(cross_aux.get("fused_feature_std", 0.0)),
+                    visual_feature_mean=float(cross_aux.get("visual_feature_mean", 0.0)),
+                    visual_feature_std=float(cross_aux.get("visual_feature_std", 0.0)),
+                    cross_attn_aux=dict(cross_aux),
+                    grounding_gamma=float(ground_aux.get("gamma", 0.0)),
+                    grounding_logit_scale=float(ground_aux.get("logit_scale", 0.0)),
+                    grounding_attn_mean=float(ground_aux.get("attn_mean", 0.0)),
+                    grounding_attn_std=float(ground_aux.get("attn_std", 0.0)),
+                    grounding_attn_entropy=float(ground_aux.get("attn_entropy", 0.0)),
+                    grounding_attn_max_mean=float(ground_aux.get("attn_max_mean", 0.0)),
+                    grounding_logits_mean=float(ground_aux.get("grounding_logits_mean", 0.0)),
+                    grounding_logits_std=float(ground_aux.get("grounding_logits_std", 0.0)),
+                    grounding_feature_delta_mean=float(ground_aux.get("query_delta_mean", 0.0)),
+                    grounding_feature_delta_norm=float(ground_aux.get("query_delta_norm", 0.0)),
+                    grounding_feature_delta_ratio=float(ground_aux.get("query_delta_ratio", 0.0)),
+                    grounding_topk_area_ratio=float(ground_aux.get("topk_area_ratio", 0.0)),
+                    grounding_aux=dict(ground_aux),
+                ), density_map_full, sgdrf_stats
+            else:
+                return pred, feat, feat_de, density_map_full, sgdrf_stats
 
         if return_aux and l_txt is not None:
             return pred, feat, feat_de, TextAlignAux(
@@ -340,3 +566,43 @@ class OmniSAM_adapt(nn.Module):
                 grounding_aux=dict(ground_aux),
             )
         return pred, feat, feat_de
+
+    def compute_sgdrf_consistency_loss(self, density_map, seg_logits):
+        """
+        Compute consistency loss between density map and segmentation uncertainty
+
+        This ensures the density estimator's predictions align with the
+        segmentation model's uncertainty (entropy).
+
+        Args:
+            density_map: (B, 1, H, W) - predicted semantic density [0, 1]
+            seg_logits: (B, num_classes, H, W) - segmentation logits
+
+        Returns:
+            consistency_loss: scalar tensor
+        """
+        if not self.enable_sgdrf or self.density_estimator is None:
+            return torch.tensor(0.0, device=seg_logits.device)
+
+        # Compute segmentation entropy (uncertainty)
+        seg_probs = F.softmax(seg_logits, dim=1)  # (B, C, H, W)
+        entropy = -(seg_probs * torch.log(seg_probs + 1e-8)).sum(dim=1, keepdim=True)  # (B, 1, H, W)
+
+        # Normalize entropy to [0, 1]
+        num_classes = seg_logits.size(1)
+        max_entropy = torch.log(torch.tensor(num_classes, dtype=torch.float32, device=seg_logits.device))
+        entropy_normalized = entropy / max_entropy
+
+        # Downsample to density_map resolution if needed
+        if entropy_normalized.shape != density_map.shape:
+            entropy_normalized = F.interpolate(
+                entropy_normalized,
+                size=density_map.shape[2:],
+                mode='bilinear',
+                align_corners=False
+            )
+
+        # MSE loss
+        consistency_loss = F.mse_loss(density_map, entropy_normalized)
+
+        return consistency_loss

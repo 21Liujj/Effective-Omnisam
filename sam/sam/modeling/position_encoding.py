@@ -204,11 +204,23 @@ def compute_axial_cis(dim: int, end_x: int, end_y: int, theta: float = 10000.0):
 def reshape_for_broadcast(freqs_cis: torch.Tensor, x: torch.Tensor):
     ndim = x.ndim
     assert 0 <= 1 < ndim
-    assert freqs_cis.shape == (x.shape[-2], x.shape[-1])
+    # assert freqs_cis.shape == (x.shape[-2], x.shape[-1])
+    # Flexible shape matching for complex tensors
+    if freqs_cis.shape != (x.shape[-2], x.shape[-1]):
+        # For complex tensors, interpolate real and imaginary parts separately
+        if freqs_cis.is_complex():
+            import torch.nn.functional as F
+            real_part = freqs_cis.real.unsqueeze(0).unsqueeze(0)
+            imag_part = freqs_cis.imag.unsqueeze(0).unsqueeze(0)
+            real_interp = F.interpolate(real_part, size=(x.shape[-2], x.shape[-1]), mode="bilinear", align_corners=False)
+            imag_interp = F.interpolate(imag_part, size=(x.shape[-2], x.shape[-1]), mode="bilinear", align_corners=False)
+            freqs_cis = torch.complex(real_interp.squeeze(0).squeeze(0), imag_interp.squeeze(0).squeeze(0))
+        else:
+            # For real tensors
+            import torch.nn.functional as F
+            freqs_cis = F.interpolate(freqs_cis.unsqueeze(0).unsqueeze(0), size=(x.shape[-2], x.shape[-1]), mode="bilinear", align_corners=False).squeeze(0).squeeze(0)
     shape = [d if i >= ndim - 2 else 1 for i, d in enumerate(x.shape)]
     return freqs_cis.view(*shape)
-
-
 def apply_rotary_enc(
     xq: torch.Tensor,
     xk: torch.Tensor,

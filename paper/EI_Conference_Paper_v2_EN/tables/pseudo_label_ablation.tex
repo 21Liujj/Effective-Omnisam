@@ -1,0 +1,17 @@
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.08}
+  \caption{Auxiliary pseudo-label quality ablation under fixed pseudo-label setting. Results only used to explore supervision reliability, not constituting main performance conclusions of this paper.}
+  \label{tab:pseudo_label_ablation}
+  \begin{tabular}{lccc}
+    \toprule
+    Method & mIoU$\uparrow$ & vs. R0 & vs. Previous \\
+    \midrule
+    Identity (R0) & 60.02 & -- & -- \\
+    Class-balanced Filtering (R2) & 60.07 & +0.05 & +0.05 \\
+    + Prototype-guided Gating (R2+R4) & 60.05 & +0.03 & -0.02 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

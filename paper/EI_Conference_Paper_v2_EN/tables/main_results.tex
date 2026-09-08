@@ -1,0 +1,16 @@
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.08}
+  \caption{Segmentation performance and training efficiency comparison under Cityscapes $\rightarrow$ DensePASS full protocol. All results use \texttt{sam2\_s}, 13-class protocol, and single random seed setting; BFScore comes from \texttt{[ValSummary]} of the same validation pipeline.}
+  \label{tab:main_results}
+  \begin{tabular}{lccccc}
+    \toprule
+    Method & mIoU$\uparrow$ & BFScore$\uparrow$ & Train Time$\downarrow$ & Iter Time$\downarrow$ & Reduction \\
+    \midrule
+    OmniSAM & \textbf{60.26} & \textbf{39.97} & 43m53s & 5.27s & -- \\
+    Ours (MTC+SMR) & 60.16 & 39.86 & \textbf{34m03s} & \textbf{4.09s} & \textbf{22.4\%} \\
+    \bottomrule
+  \end{tabular}
+\end{table}

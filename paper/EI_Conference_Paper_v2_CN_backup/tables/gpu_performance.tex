@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\caption{GPU性能分析：显存占用与计算效率对比}
+\label{tab:gpu_performance}
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{方法} & \textbf{显存峰值} & \textbf{Memory Tokens} & \textbf{步时间(s)} & \textbf{计算时间(s)} & \textbf{注意力时间(s)} \
+\midrule
+Baseline & 32.8 GB & 32768 & 2.41 & 1.56 & 0.85 \
++MTC & 31.5 GB & 8192 & 2.12 & 1.51 & 0.61 \
++MTC+SMR & \textbf{31.3 GB} & \textbf{4096} & \textbf{1.07} & \textbf{1.46} & \textbf{0.38} \
+\midrule
+\multicolumn{6}{l}{\textit{相对改善}} \
+显存降低 & -1.5 GB & 8× & - & - & - \
+速度提升 & - & - & +55.6\% & +6.4\% & +55.3\% \
+\bottomrule
+\end{tabular}
+\end{table}

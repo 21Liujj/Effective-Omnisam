@@ -85,6 +85,7 @@ class Engine:
             "depth_adapter": [],
             "lora": [],
             "memory": [],
+            "density_estimator": [],
         }
 
         # stage-independent text knobs
@@ -141,6 +142,14 @@ class Engine:
                     p.requires_grad_(True)
                     groups["lora"].append(p)
 
+        # SG-DRF density estimator
+        if bool(getattr(self.args, "enable_sgdrf", False)):
+            density_est = getattr(self.model_t, "density_estimator", None)
+            if density_est is not None:
+                for p in density_est.parameters():
+                    p.requires_grad_(True)
+                    groups["density_estimator"].append(p)
+
         # fall back: if text disabled keep old behavior (train all)
         if not any(len(v) > 0 for v in groups.values()):
             for p in self.model_t.parameters():
@@ -166,6 +175,8 @@ class Engine:
                 item["lr"] = float(self.args.lr) * text_fusion_alpha_lr_mult
             elif name == "text_grounding_logit_scale":
                 item["lr"] = float(self.args.lr) * text_scale_lr_mult
+            elif name == "density_estimator":
+                item["lr"] = float(getattr(self.args, "sgdrf_density_lr", 5e-5))
             group_list.append(item)
         print("[trainable] parameter groups:", flush=True)
         total = 0
@@ -185,6 +196,8 @@ class Engine:
                 lr_info = f" (lr={float(self.args.lr) * text_fusion_alpha_lr_mult:.6e})"
             elif name == "text_grounding_logit_scale":
                 lr_info = f" (lr={float(self.args.lr) * text_scale_lr_mult:.6e})"
+            elif name == "density_estimator":
+                lr_info = f" (lr={float(getattr(self.args, 'sgdrf_density_lr', 5e-5)):.6e})"
             print(f"  - {name}: {n}{lr_info}", flush=True)
         print(f"  - total_trainable: {total}", flush=True)
         print("[text-trainable]", flush=True)
@@ -520,6 +533,13 @@ class Engine:
         self._validate_pseudo_labels(self.save_dir, used_paths)
 
     def train(self, epoch: int):
+        # SG-DRF training stage management
+        if bool(getattr(self.args, "enable_sgdrf", False)):
+            cold_epochs = int(getattr(self.args, "sgdrf_cold_start_epochs", 2))
+            desired_stage = "cold_start" if epoch < cold_epochs else "joint"
+            if hasattr(self.model_t, "sgdrf_training_stage") and self.model_t.sgdrf_training_stage != desired_stage:
+                self.model_t.set_sgdrf_training_stage(desired_stage)
+                print(f"[SG-DRF] Switched to {desired_stage} stage at epoch {epoch}", flush=True)
         t0 = time.perf_counter()
         if hasattr(self.model_t, "memory_bank"):
             self.model_t.memory_bank.attention_time_accum = 0.0

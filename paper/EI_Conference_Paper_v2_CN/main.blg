@@ -1,0 +1,57 @@
+This is BibTeX, Version 0.99d (TeX Live 2023/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: plain.bst
+Database file #1: refs.bib
+Repeated entry---line 267 of file refs.bib
+ : @article{kirillov2023segment
+ :                             ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 344 of file refs.bib
+ : @article{rao2021dynamicvit
+ :                           ,
+I'm skipping whatever remains of this entry
+Warning--empty booktitle in chen2017deeplab
+Warning--empty booktitle in dosovitskiy2020image
+You've used 46 entries,
+            2118 wiz_defined-function locations,
+            666 strings with 12727 characters,
+and the built_in function-call counts, 17884 in all, are:
+= -- 1472
+> -- 1387
+< -- 3
++ -- 548
+- -- 500
+* -- 1312
+:= -- 3092
+add.period$ -- 138
+call.type$ -- 46
+change.case$ -- 385
+chr.to.int$ -- 0
+cite$ -- 48
+duplicate$ -- 637
+empty$ -- 1251
+format.name$ -- 500
+if$ -- 3598
+int.to.chr$ -- 0
+int.to.str$ -- 46
+missing$ -- 45
+newline$ -- 233
+num.names$ -- 92
+pop$ -- 534
+preamble$ -- 1
+purify$ -- 339
+quote$ -- 0
+skip$ -- 376
+stack$ -- 0
+substring$ -- 383
+swap$ -- 114
+text.length$ -- 3
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 184
+warning$ -- 2
+while$ -- 103
+width$ -- 48
+write$ -- 464
+(There were 2 error messages)

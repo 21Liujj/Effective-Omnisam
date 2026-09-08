@@ -13,6 +13,7 @@ from model.text_align import load_text_prototypes
 from dataset.Cityscapes import Cityscapes13, Cityscapes19
 from dataset.WildPASS import WildPASSforPL, WildPASSforAdaptation, WildPASSforAdaptation19
 from dataset.DensePASS import DensePASS13, DensePASS19
+from dataset.DensePASS_circular import DensePASS13Circular, DensePASS19Circular
 from dataset.SynPASS import SynPASS13
 from dataset.StanfordPin import StanfordPin8DataSet
 from dataset.StanfordPan import StanfordPan8forPL, StanfordPan8forAdaptation, StanfordPan8forVal
@@ -180,6 +181,16 @@ def build_model(args, num_classes, num_maskmem, device):
         text_ground_kv_stride=int(getattr(args, "text_ground_kv_stride", 1)),
         text_ground_return_attn=bool(getattr(args, "text_ground_return_attn", True)),
         text_ground_attn_temperature=float(getattr(args, "text_ground_attn_temperature", 1.0)),
+        enable_sgdrf=bool(getattr(args, "enable_sgdrf", False)),
+        sgdrf_backbone_channels=int(getattr(args, "sgdrf_backbone_channels", 256)),
+        sgdrf_enable_dynamic_fsmc=bool(getattr(args, "enable_dynamic_fsmc", True)),
+        sgdrf_enable_dynamic_scm=bool(getattr(args, "enable_dynamic_scm", True)),
+        sgdrf_fsmc_min_ratio=float(getattr(args, "sgdrf_fsmc_min_ratio", 4.0)),
+        sgdrf_fsmc_max_ratio=float(getattr(args, "sgdrf_fsmc_max_ratio", 16.0)),
+        sgdrf_scm_base_pad=int(getattr(args, "sgdrf_scm_base_pad", 1024)),
+        sgdrf_scm_min_pad=int(getattr(args, "sgdrf_scm_min_pad", 512)),
+        sgdrf_scm_max_pad=int(getattr(args, "sgdrf_scm_max_pad", 1536)),
+        sgdrf_training_stage=str(getattr(args, "sgdrf_training_stage", "joint")),
         depth_adapter_cfg=(
             getattr(args, "depth_adapter", {})
             if isinstance(getattr(args, "depth_adapter", {}), dict)
@@ -369,7 +380,11 @@ class DatasetBuilder:
                     depth_file_exts=depth_file_exts,
                     depth_normalize=depth_normalize,
                 )
-                val_dataset = DensePASS19(root_val, val_list, crop_size=(4096, 1024), sliding_window=(384, 1024))
+                # SCM support: DensePASS19
+                if getattr(self.args, 'enable_scm', False):
+                    val_dataset = DensePASS19Circular(root_val, val_list, crop_size=(4096, 1024), sliding_window=(384, 1024), enable_circular_padding=True, circular_pad_width=getattr(self.args, 'scm_pad_width', 256))
+                else:
+                    val_dataset = DensePASS19(root_val, val_list, crop_size=(4096, 1024), sliding_window=(384, 1024))
             else:
                 target_dataset = WildPASSforAdaptation(
                     pd_dir,
@@ -381,7 +396,11 @@ class DatasetBuilder:
                     depth_file_exts=depth_file_exts,
                     depth_normalize=depth_normalize,
                 )
-                val_dataset = DensePASS13(root_val, val_list, crop_size=(4096, 1024), sliding_window=(384, 1024))
+                # SCM support: DensePASS13
+                if getattr(self.args, 'enable_scm', False):
+                    val_dataset = DensePASS13Circular(root_val, val_list, crop_size=(4096, 1024), sliding_window=(384, 1024), enable_circular_padding=True, circular_pad_width=getattr(self.args, 'scm_pad_width', 256))
+                else:
+                    val_dataset = DensePASS13(root_val, val_list, crop_size=(4096, 1024), sliding_window=(384, 1024))
 
         val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=_num_workers(4), pin_memory=True)
         target_loader = DataLoader(target_dataset, batch_size=self.args.batch_size, num_workers=_num_workers(8),

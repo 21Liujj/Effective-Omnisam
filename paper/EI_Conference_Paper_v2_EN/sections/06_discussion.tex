@@ -1,0 +1,11 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Limitations}
+The current experiments are limited to single random seed and single target dataset (DensePASS). Multi-seed validation and cross-dataset generalization (e.g., WildPASS) remain to be verified. The efficiency gains are demonstrated only for training phase; inference acceleration and memory reduction have not been validated. The proposed MTC+SMR may have different effects under different backbone architectures or memory bank configurations.
+
+\subsection{Boundary and Small Object Analysis}
+The slight BFScore degradation indicates that token compression affects boundary quality. Further per-class analysis on boundary-sensitive classes (poles, traffic signs) and spatial distribution analysis could provide deeper insights into where the compression impacts prediction quality.
+
+\subsection{Future Directions}
+Future work will include: 1) Multi-seed statistical validation to confirm stability; 2) Cross-dataset evaluation on WildPASS and other panoramic datasets; 3) Inference-time efficiency analysis including latency and memory footprint; 4) Investigation of adaptive token budget strategies that adjust compression rates based on scene complexity; 5) Extension to other memory-based architectures beyond OmniSAM.

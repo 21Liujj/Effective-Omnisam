@@ -48,7 +48,17 @@ class Trainer:
             load_checkpoint(self.model, self.args.load_ckpt)
         
         self.criteria = torch.nn.CrossEntropyLoss(ignore_index=255)
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.args.lr*self.world_size, weight_decay=1e-4)
+        if bool(getattr(self.args, "enable_sgdrf", False)):
+            density_params = list(self.model.module.density_estimator.parameters())
+            density_ids = {id(p) for p in density_params}
+            main_params = [p for p in self.model.parameters() if id(p) not in density_ids]
+            self.optimizer = torch.optim.AdamW([
+                {"params": main_params, "lr": float(self.args.lr) * self.world_size},
+                {"params": density_params, "lr": float(getattr(self.args, "sgdrf_density_lr", 5e-5)) * self.world_size},
+            ], weight_decay=1e-4)
+            self.model.module.sgdrf_grad_clip_norm = float(getattr(self.args, "sgdrf_grad_clip_norm", 1.0))
+        else:
+            self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.args.lr*self.world_size, weight_decay=1e-4)
 
         self.scheduler = build_poly_warmup_scheduler(self.optimizer, power=1.0, warmup_iters=100, total_iters=self.args.num_epochs*len(self.train_loader))
 
@@ -62,10 +72,21 @@ class Trainer:
         ]
     def train(self, epoch):
         self.model.train()
+        if bool(getattr(self.args, "enable_sgdrf", False)):
+            cold_epochs = int(getattr(self.args, "sgdrf_cold_start_epochs", 2))
+            desired_stage = "cold_start" if epoch < cold_epochs else "joint"
+            if self.model.module.sgdrf_training_stage != desired_stage:
+                self.model.module.set_sgdrf_training_stage(desired_stage)
         self.train_sampler.set_epoch(epoch)
 
         progress_bar = tqdm(self.train_loader, desc=f"Epoch {epoch+1}/{self.args.num_epochs} [Train]", disable=(self.local_rank != 0))
         for it, batch in enumerate(progress_bar):
+            # Check iteration limits for ablation experiments
+            max_iters = getattr(self.args, 'max_train_iters', -1)
+            if max_iters > 0 and self.global_step >= max_iters:
+                if self.local_rank == 0:
+                    print(f'[ABLATION] Reached max_train_iters={max_iters}, stopping training loop')
+                break
             self.optimizer.zero_grad()
             self.mem_strategy.forward(self.global_step, self.model, batch, self.criteria, self.device, self.optimizer, self.callbacks, self.local_rank)
             self.global_step += 1   

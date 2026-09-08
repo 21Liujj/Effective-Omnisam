@@ -471,6 +471,15 @@ class TrainConfig:
         default=False,
         metadata={"help": "Enable lightweight decoder variants."},
     )
+    # ========== SCM (Seamless Circular Memory) Parameters ==========
+    enable_scm: bool = field(
+        default=False,
+        metadata={"help": "Enable Seamless Circular Memory (circular padding for 360° panorama)."},
+    )
+    scm_pad_width: int = field(
+        default=256,
+        metadata={"help": "Circular padding width in pixels for SCM (recommended: 256-1024)."},
+    )
     decoder_channel_ratio: float = field(
         default=1.0,
         metadata={"help": "Decoder internal channel ratio, e.g. 0.75/0.5."},
@@ -848,6 +857,57 @@ class TrainConfig:
     opts: str = field(
         default="",
         metadata={"help": "Optional overrides: comma-separated key=value pairs, supports dotted keys (e.g. plugins.pseudo_conf_mask.enabled=true)."},
+    )
+    # -------------------------------------------------------------------------
+    # SG-DRF (Spatial-Guided Dynamic Receptive Field) parameters
+    # -------------------------------------------------------------------------
+    enable_sgdrf: bool = field(
+        default=False,
+        metadata={"help": "Enable SG-DRF framework"},
+    )
+    enable_dynamic_fsmc: bool = field(
+        default=True,
+        metadata={"help": "Enable Dynamic FSMC module"},
+    )
+    enable_dynamic_scm: bool = field(
+        default=True,
+        metadata={"help": "Enable Dynamic SCM module"},
+    )
+    sgdrf_cold_start_epochs: int = field(
+        default=2,
+        metadata={"help": "Epochs for density-estimator cold start"},
+    )
+    sgdrf_density_weight: float = field(
+        default=0.1,
+        metadata={"help": "Density loss weight"},
+    )
+    sgdrf_density_lr: float = field(
+        default=5e-5,
+        metadata={"help": "Density estimator learning rate"},
+    )
+    sgdrf_grad_clip_norm: float = field(
+        default=1.0,
+        metadata={"help": "SGDRF gradient clipping max norm"},
+    )
+    sgdrf_fsmc_min_ratio: float = field(
+        default=4.0,
+        metadata={"help": "FSMC minimum compression ratio"},
+    )
+    sgdrf_fsmc_max_ratio: float = field(
+        default=16.0,
+        metadata={"help": "FSMC maximum compression ratio"},
+    )
+    sgdrf_scm_base_pad: int = field(
+        default=1024,
+        metadata={"help": "SCM base padding in source pixels"},
+    )
+    sgdrf_scm_min_pad: int = field(
+        default=512,
+        metadata={"help": "SCM minimum padding in source pixels"},
+    )
+    sgdrf_scm_max_pad: int = field(
+        default=1536,
+        metadata={"help": "SCM maximum padding in source pixels"},
     )
 
 

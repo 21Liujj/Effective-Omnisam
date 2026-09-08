@@ -1,0 +1,8 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper addresses memory token redundancy in OmniSAM panoramic UDA training by proposing MTC and SMR: the former restores spatial structure of memories and aggregates adjacent redundancy, while the latter sparsely selects historical tokens based on importance. Their cascade reduces the input scale to memory attention while keeping the visual backbone, segmentation task, and training loss definitions unchanged, thereby confining optimization focus to the memory computation path during training.
+
+In Cityscapes $\rightarrow$ DensePASS experiments with sam2\_s on 13 classes using a single seed, mIoU changes from 60.26 to 60.16 and BFScore from 39.97 to 39.86; total training time decreases from 43m53s to 34m03s, with single iteration time dropping from 5.2655s to 4.0848s, representing approximately 22.4\% time reduction. Results indicate that this method trades slight segmentation quality for clear training efficiency gains. Module ablation and token budget analysis further link these gains to memory token count and attention overhead, while qualitative results show that major scene structures do not experience overall collapse.
+
+Current evidence remains limited to a single target dataset and random seed, and cannot yet support conclusions about cross-dataset stability, inference acceleration, or memory savings; PQR also only provides auxiliary exploration. Future work will supplement multi-seed validation, additional panoramic datasets, and boundary and small object analysis, as well as investigate more reliable cross-field supervision signals.

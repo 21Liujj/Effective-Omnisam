@@ -37,14 +37,13 @@ wandb/
 logs/
 demo_compare/
 
-
-
 # ---- pregenerated / auxiliary data outputs (regeneratable, not code) ----
 aux_outputs/
 data_extra/
 
 # ---- archived experiment result bundles ----
 *.tar.gz
+*.zip
 
 # ---- stray run logs at any location (not under logs/<EXPERIMENT_NAME>/) ----
 *.log
@@ -53,4 +52,58 @@ data_extra/
 # ---- ad-hoc manual backup copies (use git history instead) ----
 *.bak
 *.bak_*
+*.backup
 *.backup_*
+*.before_*
+*.old
+
+# ---- temporary and test outputs ----
+*.tmp
+*.temp
+test_output/
+temp/
+
+# ---- IDE and editor files ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ---- Python cache and build ----
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ---- Jupyter notebook checkpoints ----
+.ipynb_checkpoints/
+
+# ---- Environment files ----
+.env
+.venv
+env/
+venv/
+ENV/
+
+# ---- Model checkpoints (too large for git) ----
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+# Exception: keep small config or metadata files
+!configs/*.pth
+!ckpt_zoo/.gitkeep
+
+# ---- Large data files ----
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+
+# ---- Experiment output directories ----
+pd_densepass_*/
+pd_sgdrf_*/
+pd_uda_*/
+pd_optimal_*/

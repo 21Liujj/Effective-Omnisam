@@ -1,0 +1,16 @@
+% Deprecated: full-protocol efficiency results are merged into main_results.tex.
+\begin{table}[t]
+  \centering
+  \caption{Cityscapes $\rightarrow$ DensePASS full protocol 下的训练效率汇总（单随机种子）。}
+  \label{tab:efficiency_analysis}
+  \begin{tabular}{lccc}
+    \toprule
+    指标 & OmniSAM baseline & Ours w/ MTC+SMR & 变化 \\
+    \midrule
+    mIoU & 60.26 & 60.16 & -0.10 \\
+    BFScore & 39.97 & 39.86 & -0.11 \\
+    总训练耗时 & 2633.36s & 2043.32s & -22.4\% \\
+    单 iter 耗时 & 5.2655s & 4.0848s & -22.4\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}

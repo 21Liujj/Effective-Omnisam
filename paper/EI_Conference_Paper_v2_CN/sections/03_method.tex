@@ -1,0 +1,63 @@
+\section{方法}
+
+\subsection{问题定义与基线方法}
+
+给定源域透视图像集$\mathcal{D}_s=\{(I_i^s, Y_i^s)\}_{i=1}^{N_s}$及其标注，和目标域全景图像集$\mathcal{D}_t=\{I_j^t\}_{j=1}^{N_t}$，无监督域适应的目标是学习在$\mathcal{D}_t$上表现良好的分割模型$f_\theta$。OmniSAM基线方法将全景图$I_t \in \mathbb{R}^{H \times W \times 3}$ (通常$W=4096, H=1024$)划分为$K$个重叠的透视窗口$\{w_1, w_2, \ldots, w_K\}$，每个窗口大小为$h \times w$ (如$1024 \times 1024$)，步长为$s$ (如384像素)。
+
+SAM2风格的记忆机制维护一个记忆库$\mathcal{M}=\{m_1, m_2, \ldots, m_t\}$，其中$m_i \in \mathbb{R}^{d \times h_m \times w_m}$表示第$i$个窗口的特征记忆。在处理第$t$个窗口时，当前查询特征$Q_t$通过交叉注意力与历史记忆交互：
+\begin{equation}
+\text{Attention}(Q_t, \mathcal{M}) = \text{softmax}\left(\frac{Q_t K_{\mathcal{M}}^T}{\sqrt{d}}\right) V_{\mathcal{M}}
+\end{equation}
+其中$K_{\mathcal{M}}, V_{\mathcal{M}}$分别为所有历史记忆的键和值投影。当记忆库包含$|\mathcal{M}|$个历史窗口，每个窗口包含$N_m$个空间Token时，注意力计算的复杂度为$O(N_q \cdot |\mathcal{M}| \cdot N_m \cdot d)$，随序列长度线性增长。
+
+\subsection{记忆Token压缩(MTC)}
+
+为降低记忆规模，我们提出在特征空间对相邻Token进行卷积聚合。给定原始记忆特征$m \in \mathbb{R}^{d \times h \times w}$，MTC通过深度可分离卷积压缩空间维度：
+\begin{equation}
+m' = \text{Conv}_{k \times k}(m), \quad m' \in \mathbb{R}^{d \times (h/r) \times (w/r)}
+\end{equation}
+其中$k$为卷积核大小，$r$为压缩率。实验中我们设置$r=2$，结合两阶段压缩实现$4 \times$总压缩率(空间维度$h \times w \rightarrow (h/4) \times (w/4)$)，Token数量从32768降至4096(8$\times$压缩)。
+
+MTC的核心优势在于保持了空间语义的局部性：相邻Token通常编码相似的语义信息(如同一物体的不同部分)，卷积聚合能够在压缩的同时保留关键特征。相比直接均匀采样或随机丢弃，MTC通过可学习的卷积核自适应地融合局部上下文。
+
+\subsection{稀疏记忆检索(SMR)}
+
+即使经过MTC压缩，历史记忆仍可能包含与当前查询无关的冗余信息。SMR通过查询引导的重要性排序进一步筛选关键记忆。具体而言，我们首先计算当前查询$Q_t$与每个历史记忆$m_i$之间的相似度得分：
+\begin{equation}
+s_i = \frac{1}{N_q} \sum_{j=1}^{N_q} \max_{k} \text{sim}(q_{t,j}, k_{i,k})
+\end{equation}
+其中$q_{t,j}$表示第$t$个窗口的第$j$个查询Token，$k_{i,k}$表示第$i$个历史记忆的第$k$个键Token，$\text{sim}(\cdot, \cdot)$为余弦相似度。然后根据得分$\{s_i\}$保留top-K个最相关的记忆参与注意力计算：
+\begin{equation}
+\mathcal{M}' = \{m_i \mid i \in \text{TopK}(\{s_i\}, K)\}
+\end{equation}
+
+SMR的物理意义是动态过滤远距离或语义无关的历史信息。例如，当前窗口聚焦于"建筑-道路"交界时，早期窗口中的"天空-植被"记忆贡献有限，可被安全剪枝。实验中我们设置保留率为50\%，进一步将有效Token数量降低2$\times$。
+
+\subsection{无缝循环记忆(SCM)}
+
+360°全景图在物理空间中首尾相连($x=0$处连接$x=W$处)，但传统滑动窗口将边界视为断裂，导致跨边界物体被截断。SCM通过循环填充(circular padding)恢复拓扑连续性。
+
+在推理阶段，我们对输入全景图$I \in \mathbb{R}^{H \times W \times 3}$进行水平循环填充：
+\begin{equation}
+I_{\text{padded}} = [I[:, -w_p:], I, I[:, :w_p]]
+\end{equation}
+其中$w_p$为填充宽度(如1024像素)。填充后的图像宽度变为$W + 2w_p$。滑动窗口在填充图像上执行推理，使得靠近边界的窗口能够"看到"对侧的上下文。最终预测通过裁剪恢复原始尺寸：
+\begin{equation}
+P = P_{\text{padded}}[:, w_p:-w_p]
+\end{equation}
+
+SCM的设计动机源于对交通标志等边界敏感类别的观察。这些小目标常位于道路边缘，当其横跨$x=0$和$x=W$边界时，模型将其误识别为两个独立的截断物体。SCM通过循环填充使模型感知完整的物体上下文，从而修复边界区域的分割断裂。
+
+实验表明，填充宽度$w_p$与性能提升呈正相关：更大的$w_p$提供更充分的跨边界上下文，但同时增加推理计算量(图像宽度从$W$增至$W+2w_p$)。我们推荐$w_p=1024$作为精度与效率的平衡点。
+
+\subsection{整体训练流程}
+
+我们的完整训练流程分为三个阶段：
+
+\textbf{阶段1：源域预训练}。在Cityscapes透视图像上训练基础分割模型，学习通用的视觉特征表示。
+
+\textbf{阶段2：目标域自训练}。利用预训练模型对DensePASS全景图生成伪标签，结合MTC和SMR进行高效的域适应训练。伪标签通过阈值过滤和类别平衡采样提升质量。
+
+\textbf{阶段3：SCM推理增强}。在验证和测试阶段启用循环填充，修复边界区域的预测质量。注意SCM仅在推理时使用，训练过程保持原始全景图，以避免引入额外的域偏移。
+
+MTC和SMR作为通用的效率优化模块，与域适应的其他组件(如伪标签生成、损失函数)正交，可灵活集成到现有框架中。

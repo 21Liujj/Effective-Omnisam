@@ -1,0 +1,17 @@
+\section{相关工作}
+
+\subsection{全景图像语义分割}
+
+全景图像分割需要处理等距柱状投影(equirectangular projection)带来的几何畸变。早期方法通过球面卷积\cite{su2017learning}或变形卷积\cite{dai2017deformable}适应畸变特征。Trans4PASS\cite{zhang2022trans4pass}利用Transformer建模长距离依赖，PanoSwin\cite{yang2023panoswin}设计全景特定的注意力窗口。DensePASS\cite{shen2023densepass}提出大规模全景分割数据集，推动了该领域的发展。
+
+\subsection{无监督域适应}
+
+域适应旨在将模型从有标注源域迁移到无标注目标域。主流方法包括对抗训练\cite{tsai2018learning}、自训练\cite{zou2018unsupervised}和熵最小化\cite{vu2019advent}。DACS\cite{tranheden2021dacs}通过混合增强生成伪标签，ProDA\cite{zhang2021prototypical}利用原型对齐减少域偏移。OmniSAM\cite{omnisam2024}首次将SAM2的记忆机制引入全景域适应，但训练成本较高。
+
+\subsection{视觉大模型与记忆机制}
+
+Segment Anything Model (SAM)\cite{kirillov2023segment}通过大规模预训练实现零样本分割。SAM2\cite{ravi2024sam2}扩展至视频域，引入记忆编码器和记忆注意力机制，通过历史帧信息提升时序一致性。然而，随着序列长度增加，记忆Token规模线性增长，导致注意力计算成本急剧上升。本文针对此问题提出Token压缩和稀疏检索方案，在保持精度的同时大幅降低计算开销。
+
+\subsection{高效注意力机制}
+
+降低Transformer计算复杂度的方法包括稀疏注意力\cite{child2019generating}、线性注意力\cite{katharopoulos2020transformers}和Token剪枝\cite{rao2021dynamicvit}。DynamicViT通过预测Token重要性动态剪枝冗余输入，EViT\cite{liang2022not}保留类别Token并融合剪枝Token。本文将类似思想应用于记忆注意力，通过查询引导的稀疏检索提升效率。

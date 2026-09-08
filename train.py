@@ -103,6 +103,72 @@ class TrainConfig:
             "help":"Directory for saving checkpoints"
         }
     )
+    # SGDRFNet configuration parameters
+    enable_sgdrf: bool = field(
+        default=False,
+        metadata={
+            "help":"Enable SG-DRF framework"
+        }
+    )
+    enable_dynamic_fsmc: bool = field(
+        default=True,
+        metadata={
+            "help":"Enable Dynamic FSMC module"
+        }
+    )
+    enable_dynamic_scm: bool = field(
+        default=True,
+        metadata={
+            "help":"Enable Dynamic SCM module"
+        }
+    )
+    sgdrf_training_stage: str = field(
+        default="cold_start",
+        metadata={
+            "help":"SGDRFNet training stage: cold_start or joint",
+            "choices": ["cold_start", "joint"],
+        }
+    )
+    sgdrf_consistency_weight: float = field(
+        default=0.05,
+        metadata={
+            "help":"Weight for consistency loss in joint training"
+        }
+    )
+    sgdrf_backbone_channels: int = field(
+        default=256,
+        metadata={
+            "help":"Number of channels in SGDRFNet backbone feature maps"
+        }
+    )
+    sgdrf_cold_start_epochs: int = field(default=2, metadata={"help":"Epochs for density-estimator cold start"})
+    sgdrf_density_weight: float = field(default=0.1, metadata={"help":"Density loss weight"})
+    sgdrf_density_lr: float = field(default=5e-5, metadata={"help":"Density estimator learning rate"})
+    sgdrf_grad_clip_norm: float = field(default=1.0, metadata={"help":"SGDRF gradient clipping max norm"})
+    sgdrf_fsmc_min_ratio: float = field(default=4.0, metadata={"help":"FSMC minimum compression ratio"})
+    sgdrf_fsmc_max_ratio: float = field(default=16.0, metadata={"help":"FSMC maximum compression ratio"})
+    sgdrf_scm_base_pad: int = field(default=1024, metadata={"help":"SCM base padding in source pixels"})
+    sgdrf_scm_min_pad: int = field(default=512, metadata={"help":"SCM minimum padding in source pixels"})
+    sgdrf_scm_max_pad: int = field(default=1536, metadata={"help":"SCM maximum padding in source pixels"})
+    # SGDRFNet ablation experiment parameters
+    sgdrf_train_list: str = field(default="", metadata={"help":"Path to SGDRF-specific train list file (overrides default train_list for ablation)"})
+    sgdrf_val_list: str = field(default="", metadata={"help":"Path to SGDRF-specific val list file (overrides default val_list for ablation)"})
+    max_train_samples: int = field(default=-1, metadata={"help":"Maximum training samples (-1 for no limit)"})
+    max_train_iters: int = field(default=-1, metadata={"help":"Maximum training iterations (-1 for no limit)"})
+    # MTC (Memory Token Compression) parameters
+    enable_mtc: bool = field(default=False, metadata={"help":"Enable Memory Token Compression"})
+    mtc_mode: str = field(default="pool", metadata={"help":"MTC compression mode (pool/spatial)", "choices": ["pool", "spatial"]})
+    mtc_kernel_size: int = field(default=2, metadata={"help":"MTC pooling kernel size"})
+    mtc_min_tokens: int = field(default=64, metadata={"help":"MTC minimum token count"})
+    mtc_enable_in_train: bool = field(default=True, metadata={"help":"Enable MTC during training"})
+    mtc_enable_in_pseudo_label: bool = field(default=True, metadata={"help":"Enable MTC during pseudo-label generation"})
+    # SMR (Sparse Memory Retrieval) parameters
+    enable_smr: bool = field(default=False, metadata={"help":"Enable Sparse Memory Retrieval"})
+    smr_mode: str = field(default="feature_norm", metadata={"help":"SMR scoring mode", "choices": ["feature_norm"]})
+    smr_keep_ratio: float = field(default=0.5, metadata={"help":"SMR token keep ratio (0.0-1.0)"})
+    smr_min_tokens: int = field(default=64, metadata={"help":"SMR minimum token count"})
+    smr_enable_in_train: bool = field(default=True, metadata={"help":"Enable SMR during training"})
+    smr_enable_in_pseudo_label: bool = field(default=True, metadata={"help":"Enable SMR during pseudo-label generation"})
 def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
